@@ -24,7 +24,7 @@ jobs:
       run: dotnet restore -r:win-x64
       
     - name: publish
-      run: dotnet publish --no-restore -o:publish -r:win-x64 -p:Version=${GITHUB_REF_NAME#v}
+      run: dotnet publish MsrPlayer/MsrPlayer.csproj --no-restore -o:publish -r:win-x64 -p:Version=${GITHUB_REF_NAME#v}
       
     - name: zip
       run: zip -r msrplayer.zip publish
