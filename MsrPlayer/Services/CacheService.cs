@@ -41,8 +41,9 @@ public class CacheService
 
     public CacheService()
     {
-        var appDir = AppDomain.CurrentDomain.BaseDirectory;
-        _cacheDirectory = Path.Combine(appDir, "cache");
+        // 缓存放在 %APPDATA% 下，避免自动更新替换安装目录时清空缓存
+        var appDataDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "MsrPlayer");
+        _cacheDirectory = Path.Combine(appDataDir, "cache");
         EnsureCacheDirectories();
     }
 

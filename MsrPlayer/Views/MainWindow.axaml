@@ -16,7 +16,17 @@
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 
-    <Grid ColumnDefinitions="4*, 3*, 3*" Margin="0">
+    <Grid RowDefinitions="Auto, *" Margin="0">
+        <!-- 更新提示横幅 -->
+        <Border Grid.Row="0" Background="#1DB954" Padding="14,6" IsVisible="{Binding IsUpdateVisible}">
+            <Grid ColumnDefinitions="Auto, *, Auto" VerticalAlignment="Center">
+                <TextBlock Grid.Column="0" Text="{Binding UpdateBannerText}" Foreground="#0a0a0a" FontSize="12" FontWeight="Bold" VerticalAlignment="Center"/>
+                <ProgressBar Grid.Column="1" Margin="12,0" Minimum="0" Maximum="100" Value="{Binding UpdateProgress}" VerticalAlignment="Center" IsVisible="{Binding IsUpdating}" Foreground="#0a0a0a" Background="#1d7a3d"/>
+                <Button Grid.Column="2" Command="{Binding DownloadUpdateCommand}" Classes="updateBtn" Content="{Binding UpdateButtonText}" IsVisible="{Binding !IsUpdating}"/>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="1" ColumnDefinitions="4*, 3*, 3*" Margin="0">
         <!-- 第一列：歌曲列表 -->
         <Border Background="#121212">
             <DockPanel Margin="16,16">
@@ -332,6 +342,7 @@
                 </ScrollViewer>
             </DockPanel>
         </Border>
+        </Grid>
     </Grid>
 
     <Window.Styles>
@@ -400,6 +411,21 @@
         <Style Selector="Border.listItem:pointerover">
             <Setter Property="Background" Value="#252525"/>
             <Setter Property="BorderBrush" Value="#1DB954"/>
+        </Style>
+
+        <!-- 更新按钮样式 -->
+        <Style Selector="Button.updateBtn">
+            <Setter Property="Background" Value="#0a0a0a"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Foreground" Value="#1DB954"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Padding" Value="14,5"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+        <Style Selector="Button.updateBtn:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#1a1a1a"/>
         </Style>
     </Window.Styles>
 </Window>

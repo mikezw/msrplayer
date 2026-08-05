@@ -25,15 +25,49 @@ jobs:
       
     - name: test
       run: dotnet test --no-restore
-      
-    - name: publish
-      run: dotnet publish MsrPlayer/MsrPlayer.csproj --no-restore -o:msrplayer -r:win-x64 -p:Version=${GITHUB_REF_NAME#v}
-      
-    - name: zip
-      run: zip -r msrplayer.zip msrplayer
 
-    - name: release
-      uses: softprops/action-gh-release@v3
+    - name: publish
       if: github.ref_type == 'tag'
-      with:
-        files: msrplayer.zip
+      run: dotnet publish MsrPlayer/MsrPlayer.csproj --no-restore -o:release/win-x64 -r:win-x64 -p:Version=${GITHUB_REF_NAME#v}
+
+    - name: install vpk
+      if: github.ref_type == 'tag'
+      run: dotnet tool install --global vpk --version 1.2.0
+
+    # 发布两个 Windows 架构（win-x64 / win-arm64），用独立 channel 区分产物命名
+    # 每个架构：拉上一版生成增量包 → 打包 → 安装包重命名（带架构+版本）→ 生成 SHA256
+    - name: publish and pack
+      if: github.ref_type == 'tag'
+      run: |
+        set -e
+        export PATH="$PATH:$HOME/.dotnet/tools"
+        VERSION=${GITHUB_REF_NAME#v}
+        for SPEC in "win-x64:win" "win-arm64:win-arm64"; do
+          RID=${SPEC%%:*}
+          CHANNEL=${SPEC##*:}
+
+          dotnet publish MsrPlayer/MsrPlayer.csproj --no-restore -o:release/$RID -r:$RID -p:Version=${VERSION}
+
+          # 拉取上一版本产物用于生成增量更新包；首次发布（无上一版本）时忽略失败
+          vpk download github --repoUrl https://github.com/mikezw/msrplayer -c ${CHANNEL} || true
+
+          # 代码签名（可选）：准备好证书后，在 pack 命令追加签名参数
+          #   Azure Trusted Signing: --azureTrustedSignFile <metadata.json>
+          #   已有证书: --signTemplate "signtool sign /f <cert.pfx> /p <密码> {{file}}"
+          vpk pack --packId MsrPlayer --packVersion ${VERSION} --packDir release/$RID --packTitle "Monster Siren Player" --mainExe MsrPlayer.exe --icon MsrPlayer/Assets/music-icon.ico --runtime ${RID} --channel ${CHANNEL}
+
+          # 安装包重命名（带架构+版本后缀），便于用户识别；不影响自动更新（更新源只引用 nupkg）
+          mv Releases/MsrPlayer-${CHANNEL}-Setup.exe Releases/MsrPlayer-${RID}-${VERSION}-Setup.exe
+
+          # 仅对安装文件生成 SHA256 校验值
+          (cd Releases && sha256sum MsrPlayer-${RID}-${VERSION}-Setup.exe > MsrPlayer-${RID}-${VERSION}-Setup.exe.sha256)
+        done
+
+    # 上传全部产物到 GitHub Release（gh 上传任意文件，不受 vpk 资产类型限制）
+    - name: release
+      if: github.ref_type == 'tag'
+      run: |
+        gh release create ${GITHUB_REF_NAME} --generate-notes || true
+        gh release upload ${GITHUB_REF_NAME} Releases/* --clobber
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -2,12 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MsrPlayer.Models;
 using MsrPlayer.Services;
+using Velopack;
+using Velopack.Exceptions;
 
 namespace MsrPlayer.ViewModels;
 
@@ -19,11 +22,13 @@ public partial class MainWindowViewModel : ViewModelBase
     private readonly ConfigService _configService;
     private readonly LyricService _lyricService;
     private readonly CacheService _cacheService;
+    private readonly UpdateService _updateService;
     private PlayerConfig _config;
     private List<LyricLine> _currentLyrics = new List<LyricLine>();
     private int _currentLyricIndex = -1;
     private SongDetail? _currentSongDetail;
     private List<Song> _allSongs = new List<Song>();
+    private UpdateInfo? _updateInfo;
 
     [ObservableProperty]
     private string _searchText = string.Empty;
@@ -73,6 +78,21 @@ public partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty]
     private bool _enableCache;
 
+    [ObservableProperty]
+    private bool _isUpdateVisible;
+
+    [ObservableProperty]
+    private string _updateBannerText = string.Empty;
+
+    [ObservableProperty]
+    private string _updateButtonText = "下载更新";
+
+    [ObservableProperty]
+    private bool _isUpdating;
+
+    [ObservableProperty]
+    private double _updateProgress;
+
     public string LoopModeText
     {
         get
@@ -101,7 +121,8 @@ public partial class MainWindowViewModel : ViewModelBase
         PlaylistService playlistService,
         ConfigService configService,
         LyricService lyricService,
-        CacheService cacheService)
+        CacheService cacheService,
+        UpdateService updateService)
     {
         _apiService = apiService;
         _audioService = audioService;
@@ -109,6 +130,7 @@ public partial class MainWindowViewModel : ViewModelBase
         _configService = configService;
         _lyricService = lyricService;
         _cacheService = cacheService;
+        _updateService = updateService;
 
         _config = _configService.Load();
         _volume = _config.Volume;
@@ -126,6 +148,7 @@ public partial class MainWindowViewModel : ViewModelBase
         _audioService.Volume = (float)(Volume / 100f);
 
         LoadDataAsync();
+        _ = CheckForUpdateAsync(silent: true);
     }
 
     partial void OnVolumeChanged(double value)
@@ -720,5 +743,105 @@ public partial class MainWindowViewModel : ViewModelBase
         {
             IsPlaying = state == PlaybackState.Playing;
         });
+    }
+
+    private async Task CheckForUpdateAsync(bool silent)
+    {
+        if (!silent)
+        {
+            UpdateBannerText = "正在检查更新...";
+            IsUpdateVisible = true;
+        }
+
+        try
+        {
+            var info = await _updateService.CheckForUpdatesAsync();
+
+            if (info == null)
+            {
+                IsUpdateVisible = false;
+                if (!silent)
+                {
+                    StatusText = "已是最新版本";
+                }
+                return;
+            }
+
+            var currentVersion = Assembly.GetExecutingAssembly().GetName().Version?.ToString();
+            var latestVersion = info.TargetFullRelease.Version.ToString();
+            if (!UpdateService.IsNewerVersion(currentVersion, latestVersion))
+            {
+                IsUpdateVisible = false;
+                if (!silent)
+                {
+                    StatusText = "已是最新版本";
+                }
+                return;
+            }
+
+            _updateInfo = info;
+            UpdateBannerText = $"发现新版本 v{latestVersion}";
+            UpdateButtonText = "下载更新";
+            IsUpdateVisible = true;
+            if (!silent)
+            {
+                StatusText = $"发现新版本 v{latestVersion}，点击下载更新";
+            }
+        }
+        catch (NotInstalledException)
+        {
+            // 非安装版（直接运行 bin/发布目录等）：无 Velopack 安装记录，无法检查更新
+            IsUpdateVisible = false;
+            if (!silent)
+            {
+                StatusText = "当前为非安装版本，无法检查更新（请使用安装版）";
+            }
+        }
+        catch (Exception ex)
+        {
+            IsUpdateVisible = false;
+            if (!silent)
+            {
+                StatusText = $"检查更新失败: {ex.Message}";
+            }
+        }
+    }
+
+    [RelayCommand]
+    private async Task CheckForUpdate()
+    {
+        await CheckForUpdateAsync(silent: false);
+    }
+
+    [RelayCommand]
+    private async Task DownloadUpdate()
+    {
+        if (_updateInfo == null || IsUpdating)
+        {
+            return;
+        }
+
+        IsUpdating = true;
+        UpdateProgress = 0;
+        UpdateBannerText = "正在下载更新...";
+        UpdateButtonText = "下载中...";
+
+        try
+        {
+            await _updateService.DownloadUpdatesAsync(_updateInfo, progress =>
+            {
+                Dispatcher.UIThread.Post(() => UpdateProgress = progress);
+            });
+
+            UpdateBannerText = "下载完成，正在重启以应用更新...";
+            await Task.Delay(500);
+            _updateService.ApplyUpdatesAndRestart(_updateInfo);
+        }
+        catch (Exception ex)
+        {
+            IsUpdating = false;
+            UpdateButtonText = "重试";
+            UpdateBannerText = $"更新失败: {ex.Message}";
+        }
     }
 }
