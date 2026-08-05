@@ -23,6 +23,9 @@ jobs:
     - name: restore dependencies
       run: dotnet restore -r:win-x64
       
+    - name: test
+      run: dotnet test --no-restore
+      
     - name: publish
       run: dotnet publish MsrPlayer/MsrPlayer.csproj --no-restore -o:msrplayer -r:win-x64 -p:Version=${GITHUB_REF_NAME#v}
       
