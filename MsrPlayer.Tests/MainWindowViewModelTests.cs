@@ -1,114 +1,66 @@
 using MsrPlayer.Models;
+using MsrPlayer.ViewModels;
 using Xunit;
 
 namespace MsrPlayer.Tests;
 
 public class MainWindowViewModelTests
 {
-    [Fact]
-    public void FilterSongs_WithEmptySearchText_ShowsAllSongs()
+    private static Song CreateSong(string name, params string[] artists) => new()
     {
-        // Arrange
-        var allSongs = new List<Song>
-        {
-            new Song { Cid = "1", Name = "Song A", Artists = new List<string> { "Artist 1" } },
-            new Song { Cid = "2", Name = "Song B", Artists = new List<string> { "Artist 2" } },
-            new Song { Cid = "3", Name = "Song C", Artists = new List<string> { "Artist 3" } }
-        };
+        Cid = Guid.NewGuid().ToString(),
+        Name = name,
+        Artists = artists.ToList()
+    };
 
-        // Act & Assert would require direct testing of FilterSongs method
-        // Since it's private, we'll test through SearchText property
-        Assert.True(allSongs.Count == 3); // Basic sanity check
+    [Fact]
+    public void SongMatches_ByName_CaseInsensitive_ReturnsTrue()
+    {
+        var song = CreateSong("Operation Blade", "MSR");
+
+        Assert.True(MainWindowViewModel.SongMatches(song, "blade"));
+        Assert.True(MainWindowViewModel.SongMatches(song, "BLADE"));
+        Assert.True(MainWindowViewModel.SongMatches(song, "operation"));
     }
 
     [Fact]
-    public void FilterSongs_WithMatchingSearchText_FiltersCorrectly()
+    public void SongMatches_ByArtist_CaseInsensitive_ReturnsTrue()
     {
-        // Arrange
-        var allSongs = new List<Song>
-        {
-            new Song { Cid = "1", Name = "Operation Blade", Artists = new List<string> { "MSR" } },
-            new Song { Cid = "2", Name = "Requiem", Artists = new List<string> { "MSR" } },
-            new Song { Cid = "3", Name = "Lullabye", Artists = new List<string> { "MSR" } }
-        };
+        var song = CreateSong("Some Song", "塞壬唱片-MSR");
 
-        // Act - simulate search for "blade"
-        var searchTerm = "blade";
-        var filtered = allSongs.Where(s =>
-            s.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-            s.ArtistDisplay.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)
-        ).ToList();
-
-        // Assert
-        Assert.Single(filtered);
-        Assert.Equal("Operation Blade", filtered[0].Name);
+        Assert.True(MainWindowViewModel.SongMatches(song, "塞壬"));
+        Assert.True(MainWindowViewModel.SongMatches(song, "msr"));
     }
 
     [Fact]
-    public void FilterSongs_WithArtistSearch_FiltersCorrectly()
+    public void SongMatches_NoMatch_ReturnsFalse()
     {
-        // Arrange
-        var allSongs = new List<Song>
-        {
-            new Song { Cid = "1", Name = "Song A", Artists = new List<string> { "MSR" } },
-            new Song { Cid = "2", Name = "Song B", Artists = new List<string> { "Other Artist" } },
-            new Song { Cid = "3", Name = "Song C", Artists = new List<string> { "MSR" } }
-        };
+        var song = CreateSong("Requiem", "MSR");
 
-        // Act - simulate search for "MSR"
-        var searchTerm = "MSR";
-        var filtered = allSongs.Where(s =>
-            s.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-            s.ArtistDisplay.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)
-        ).ToList();
-
-        // Assert
-        Assert.Equal(2, filtered.Count);
-        Assert.All(filtered, song => Assert.Contains("MSR", song.ArtistDisplay));
+        Assert.False(MainWindowViewModel.SongMatches(song, "nonexistent"));
+        Assert.False(MainWindowViewModel.SongMatches(song, "lullaby"));
     }
 
     [Fact]
-    public void FilterSongs_WithNoMatch_ReturnsEmptyList()
+    public void SongMatches_NullName_DoesNotThrowAndCanMatchByArtist()
     {
-        // Arrange
-        var allSongs = new List<Song>
-        {
-            new Song { Cid = "1", Name = "Song A", Artists = new List<string> { "Artist 1" } },
-            new Song { Cid = "2", Name = "Song B", Artists = new List<string> { "Artist 2" } }
-        };
+        var song = CreateSong(null!, "MSR");
 
-        // Act - search for non-existent term
-        var searchTerm = "nonexistent";
-        var filtered = allSongs.Where(s =>
-            s.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-            s.ArtistDisplay.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)
-        ).ToList();
-
-        // Assert
-        Assert.Empty(filtered);
+        Assert.False(MainWindowViewModel.SongMatches(song, "anything"));
+        Assert.True(MainWindowViewModel.SongMatches(song, "msr"));
     }
 
     [Fact]
-    public void FilterSongs_IsCaseInsensitive()
+    public void SongMatches_NullArtists_DoesNotThrowAndCanMatchByName()
     {
-        // Arrange
-        var allSongs = new List<Song>
+        var song = new Song
         {
-            new Song { Cid = "1", Name = "Operation Blade", Artists = new List<string> { "MSR" } }
+            Cid = "1",
+            Name = "Operation Blade",
+            Artists = null!
         };
 
-        // Act - search with different cases
-        var searchTerms = new[] { "blade", "BLADE", "Blade" };
-
-        foreach (var term in searchTerms)
-        {
-            var filtered = allSongs.Where(s =>
-                s.Name.Contains(term, StringComparison.OrdinalIgnoreCase) ||
-                s.ArtistDisplay.Contains(term, StringComparison.OrdinalIgnoreCase)
-            ).ToList();
-
-            // Assert
-            Assert.Single(filtered);
-        }
+        Assert.True(MainWindowViewModel.SongMatches(song, "blade"));
+        Assert.False(MainWindowViewModel.SongMatches(song, "unknown-artist"));
     }
 }

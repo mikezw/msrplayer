@@ -390,10 +390,6 @@
             <Setter Property="Foreground" Value="#e0e0e0"/>
             <Setter Property="CaretBrush" Value="#1DB954"/>
         </Style>
-        <Style Selector="TextBox:focus /template/ Border">
-            <Setter Property="BorderBrush" Value="#1DB954"/>
-            <Setter Property="BorderThickness" Value="0"/>
-        </Style>
 
         <!-- 列表项悬停效果 -->
         <Style Selector="Border.listItem">
