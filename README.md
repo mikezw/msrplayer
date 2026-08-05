@@ -1,6 +1,6 @@
 # Monster Siren Player
 
-一个基于 Avalonia UI 的塞壬唱片（https://monster-siren.hypergryph.com/）音乐播放器。
+一个基于 Avalonia UI 的[塞壬唱片](https://monster-siren.hypergryph.com/)音乐播放器。
 
 > 本项目完全由 AI 编写。
 
@@ -14,6 +14,7 @@
 - 音频缓存系统（边下边播）
 - 缓存目录配置
 - 系统托盘支持
+- 自动更新（Velopack）
 
 ## 技术栈
 
@@ -21,6 +22,7 @@
 - Avalonia UI 12
 - CommunityToolkit.Mvvm
 - NAudio (音频播放)
+- Velopack (自动更新)
 
 ## 运行
 
@@ -43,4 +45,4 @@ dotnet build
 - 缓存目录
 - 是否启用缓存
 
-缓存目录默认为程序目录下的 `cache` 文件夹。
+缓存目录默认为 `%APPDATA%\MsrPlayer\cache` 文件夹。
