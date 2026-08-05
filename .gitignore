@@ -72,3 +72,6 @@ $RECYCLE.BIN/
 appsettings.Development.json
 .env
 .env.local
+
+## Qoder IDE
+.qoder/

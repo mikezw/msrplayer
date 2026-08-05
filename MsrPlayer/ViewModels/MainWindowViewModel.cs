@@ -23,6 +23,10 @@ public partial class MainWindowViewModel : ViewModelBase
     private List<LyricLine> _currentLyrics = new List<LyricLine>();
     private int _currentLyricIndex = -1;
     private SongDetail? _currentSongDetail;
+    private List<Song> _allSongs = new List<Song>();
+
+    [ObservableProperty]
+    private string _searchText = string.Empty;
 
     [ObservableProperty]
     private ObservableCollection<Song> _songs = new ObservableCollection<Song>();
@@ -146,6 +150,40 @@ public partial class MainWindowViewModel : ViewModelBase
         StatusText = value ? "缓存模式已开启" : "缓存模式已关闭";
     }
 
+    partial void OnSearchTextChanged(string value)
+    {
+        FilterSongs();
+    }
+
+    private void FilterSongs()
+    {
+        if (string.IsNullOrWhiteSpace(SearchText))
+        {
+            Songs.Clear();
+            foreach (var song in _allSongs)
+            {
+                Songs.Add(song);
+            }
+        }
+        else
+        {
+            var filtered = _allSongs.Where(s =>
+                s.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
+                s.ArtistDisplay.Contains(SearchText, StringComparison.OrdinalIgnoreCase)
+            ).ToList();
+
+            Songs.Clear();
+            foreach (var song in filtered)
+            {
+                Songs.Add(song);
+            }
+        }
+
+        StatusText = string.IsNullOrEmpty(SearchText)
+            ? $"共 {_allSongs.Count} 歌曲"
+            : $"搜索结果：{Songs.Count} / {_allSongs.Count} 歌曲";
+    }
+
     [RelayCommand]
     private void ToggleCacheMode()
     {
@@ -217,12 +255,8 @@ public partial class MainWindowViewModel : ViewModelBase
             var songs = await _apiService.GetSongsAsync();
             await Dispatcher.UIThread.InvokeAsync(() =>
             {
-                Songs.Clear();
-                foreach (var song in songs)
-                {
-                    Songs.Add(song);
-                }
-                StatusText = $"共 {Songs.Count} 歌曲";
+                _allSongs = songs;
+                FilterSongs();
             });
 
             var savedPlaylist = _playlistService.Load();
