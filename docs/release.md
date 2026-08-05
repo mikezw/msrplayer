@@ -27,7 +27,10 @@ Velopack 通过 **独立 channel** 区分不同架构，产物命名自动携带
 
 ## 3. CI 发布流程（.github/workflows/dotnet.yml）
 
-触发条件：`workflow_dispatch`（手动）+ tag 推送（`github.ref_type == 'tag'`），tag 形如 `v1.0.0`，版本号取自 `${GITHUB_REF_NAME#v}`。
+触发条件：
+
+- `push` + tag（自动）：推送 `v*` 格式 tag 时自动触发，如 `v1.0.0`，版本号取自 `${GITHUB_REF_NAME#v}`。**每个 tag 推送触发一次独立运行**，删除远程 tag 不触发
+- `workflow_dispatch`（手动）：手动触发时可选择分支或 tag；选 tag 时 `github.ref_type == 'tag'`，发布步骤才会执行（选分支则只跑构建和测试）
 
 tag 推送后的步骤：
 
