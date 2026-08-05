@@ -23,10 +23,8 @@ jobs:
         dotnet-version: 10.0
         
     - name: restore dependencies
-      # 两个架构分别 restore（-r 不支持重复指定，分号在 -p 属性中会被 CLI 拆分）
-      run: |
-        dotnet restore -r:win-x64
-        dotnet restore -r:win-arm64
+      # 无 RID 恢复（为构建/测试提供基础 assets）；各架构的 RID 由 publish 隐式 restore 补齐
+      run: dotnet restore
       
     - name: test
       run: dotnet test --no-restore
@@ -51,7 +49,8 @@ jobs:
           RID=${SPEC%%:*}
           CHANNEL=${SPEC##*:}
 
-          dotnet publish MsrPlayer/MsrPlayer.csproj --no-restore -o:release/$RID -r:$RID -p:Version=${VERSION}
+          # publish 不带 --no-restore：SDK 会为当前 RID 自动补齐 assets（连续 restore -r 会互相覆盖，不可依赖）
+          dotnet publish MsrPlayer/MsrPlayer.csproj -o:release/$RID -r:$RID -p:Version=${VERSION}
 
           # 拉取上一版本产物用于生成增量更新包；首次发布（无上一版本）时忽略失败
           vpk download github --repoUrl https://github.com/mikezw/msrplayer -c ${CHANNEL} || true
