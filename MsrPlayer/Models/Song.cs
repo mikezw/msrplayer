@@ -28,6 +28,6 @@ public class Song
 
     public string ArtistDisplay
     {
-        get { return Artists.Count > 0 ? string.Join(", ", Artists) : "未知艺术家"; }
+        get { return Artists is { Count: > 0 } ? string.Join(", ", Artists) : "未知艺术家"; }
     }
 }

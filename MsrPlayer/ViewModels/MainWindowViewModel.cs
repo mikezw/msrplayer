@@ -155,31 +155,25 @@ public partial class MainWindowViewModel : ViewModelBase
         FilterSongs();
     }
 
+    internal static bool SongMatches(Song song, string searchText)
+    {
+        return (!string.IsNullOrEmpty(song.Name) && song.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase))
+            || song.ArtistDisplay.Contains(searchText, StringComparison.OrdinalIgnoreCase);
+    }
+
     private void FilterSongs()
     {
         if (string.IsNullOrWhiteSpace(SearchText))
         {
-            Songs.Clear();
-            foreach (var song in _allSongs)
-            {
-                Songs.Add(song);
-            }
+            Songs = new ObservableCollection<Song>(_allSongs);
         }
         else
         {
-            var filtered = _allSongs.Where(s =>
-                s.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
-                s.ArtistDisplay.Contains(SearchText, StringComparison.OrdinalIgnoreCase)
-            ).ToList();
-
-            Songs.Clear();
-            foreach (var song in filtered)
-            {
-                Songs.Add(song);
-            }
+            var filtered = _allSongs.Where(s => SongMatches(s, SearchText)).ToList();
+            Songs = new ObservableCollection<Song>(filtered);
         }
 
-        StatusText = string.IsNullOrEmpty(SearchText)
+        StatusText = string.IsNullOrWhiteSpace(SearchText)
             ? $"共 {_allSongs.Count} 歌曲"
             : $"搜索结果：{Songs.Count} / {_allSongs.Count} 歌曲";
     }
@@ -268,7 +262,7 @@ public partial class MainWindowViewModel : ViewModelBase
                     Playlist.Add(item);
                 }
                 UpdateCacheStatus();
-                StatusText = $"共 {Songs.Count} 歌曲，播放列表 {Playlist.Count} 首";
+                StatusText = $"共 {_allSongs.Count} 歌曲，播放列表 {Playlist.Count} 首";
             });
         }
         catch (Exception ex)
