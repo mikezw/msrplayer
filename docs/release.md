@@ -35,7 +35,7 @@ tag 推送后的步骤：
 2. **publish and pack**（bash 循环两个架构 `"win-x64:win" "win-arm64:win-arm64"`）：
    - `dotnet publish -r:{RID} -p:Version={版本}`
    - `vpk download github -c {CHANNEL} || true`：拉取上一版本产物用于生成增量更新包（首次发布无上一版本，忽略失败）
-   - `vpk pack --runtime {RID} --channel {CHANNEL}`：生成安装包、全量更新包、便携版、更新源
+   - `vpk win pack --runtime {RID} --channel {CHANNEL}`：生成安装包、全量更新包、便携版、更新源（runner 为 Linux，跨平台打包 Windows 包必须加 OS 指令 `win`）
    - 安装包重命名：`MsrPlayer-{CHANNEL}-Setup.exe` → `MsrPlayer-{RID}-{版本}-Setup.exe`（带架构 + 版本后缀，便于用户识别；不影响自动更新，更新源只引用 nupkg）
    - 仅对安装包生成 SHA256 校验文件（`*.sha256`），其他产物不生成
 3. **release**：`gh release create {tag} --generate-notes` + `gh release upload Releases/* --clobber`，全部产物上传到对应 tag 的 GitHub Release

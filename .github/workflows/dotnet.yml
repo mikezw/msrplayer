@@ -54,7 +54,8 @@ jobs:
           # 代码签名（可选）：准备好证书后，在 pack 命令追加签名参数
           #   Azure Trusted Signing: --azureTrustedSignFile <metadata.json>
           #   已有证书: --signTemplate "signtool sign /f <cert.pfx> /p <密码> {{file}}"
-          vpk pack --packId MsrPlayer --packVersion ${VERSION} --packDir release/$RID --packTitle "Monster Siren Player" --mainExe MsrPlayer.exe --icon MsrPlayer/Assets/music-icon.ico --runtime ${RID} --channel ${CHANNEL}
+          # 注意：runner 是 Linux，打包 Windows 包必须用 OS 指令 `win`（vpk win pack）
+          vpk win pack --packId MsrPlayer --packVersion ${VERSION} --packDir release/$RID --packTitle "Monster Siren Player" --mainExe MsrPlayer.exe --icon MsrPlayer/Assets/music-icon.ico --runtime ${RID} --channel ${CHANNEL}
 
           # 安装包重命名（带架构+版本后缀），便于用户识别；不影响自动更新（更新源只引用 nupkg）
           mv Releases/MsrPlayer-${CHANNEL}-Setup.exe Releases/MsrPlayer-${RID}-${VERSION}-Setup.exe
