@@ -64,8 +64,8 @@ tag 推送后的步骤：
 
 | 项 | 规则 |
 |----|------|
-| 项目版本 | `MsrPlayer.csproj` 的 `<Version>`，如 `1.0.0` |
-| 发布 tag | `v{版本}`，如 `v1.0.0`，tag 与 `<Version>` 保持一致 |
+| 项目版本 | `MsrPlayer.csproj` 的 `<Version>` 固定为 `0.0.0`，仅本地开发构建使用（占位） |
+| 发布 tag | `v{版本}`，如 `v1.0.0`，**发布版本以 tag 为准**；CI 通过 `-p:Version={版本}` 和 `vpk --packVersion` 统一使用 tag 版本，与 csproj 无关 |
 | 增量更新 | 需保留历史版本的 nupkg（Release 资产中有），Velopack 据此生成 delta 包 |
 | 首次发布 | `vpk download` 失败属正常，忽略后直接打全量包 |
 
