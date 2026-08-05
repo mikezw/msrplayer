@@ -26,6 +26,26 @@
                     <TextBlock Text="双击添加到播放列表" Foreground="#a0a0a0" FontSize="12"/>
                 </StackPanel>
 
+                <!-- 搜索框 -->
+                <Border DockPanel.Dock="Top"
+                        Background="#1e1e1e"
+                        BorderBrush="#2a2a2a"
+                        BorderThickness="1"
+                        CornerRadius="6"
+                        Padding="10,8"
+                        Margin="0,0,0,10">
+                    <Grid ColumnDefinitions="Auto, *">
+                        <TextBlock Grid.Column="0" Text="🔍" FontSize="14" Foreground="#606060" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                        <TextBox Grid.Column="1"
+                                 Text="{Binding SearchText, Mode=TwoWay}"
+                                 PlaceholderText="搜索歌曲..."
+                                 Background="Transparent"
+                                 BorderThickness="0"
+                                 Foreground="#e0e0e0"
+                                 FontSize="13"/>
+                    </Grid>
+                </Border>
+
                 <!-- 状态 -->
                 <Border DockPanel.Dock="Top"
                         Background="#1e1e1e"
@@ -41,14 +61,9 @@
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Border Padding="10,6"
-                                        Background="Transparent"
-                                        DoubleTapped="OnSongDoubleTapped"
-                                        CornerRadius="4">
-                                    <Border.Styles>
-                                        <Style Selector="Border:pointerover">
-                                            <Setter Property="Background" Value="#1a1a1a"/>
-                                        </Style>
-                                    </Border.Styles>
+                                        CornerRadius="4"
+                                        Classes="listItem"
+                                        DoubleTapped="OnSongDoubleTapped">
                                     <Grid ColumnDefinitions="Auto, *" VerticalAlignment="Center">
                                         <!-- 添加按钮 -->
                                         <Border Grid.Column="0"
@@ -253,6 +268,7 @@
                                     <!-- 正在播放时的样式 -->
                                     <Border Padding="10,6"
                                             Background="#1DB954"
+                                            BorderThickness="1"
                                             CornerRadius="4"
                                             IsVisible="{Binding IsPlaying}"
                                             DoubleTapped="OnPlaylistItemDoubleTapped">
@@ -275,12 +291,11 @@
                                         </Grid>
                                     </Border>
                                     <!-- 未播放时的样式 -->
-                                    <Border Padding="10,6" Background="Transparent" IsVisible="{Binding !IsPlaying}" DoubleTapped="OnPlaylistItemDoubleTapped" CornerRadius="4">
-                                        <Border.Styles>
-                                            <Style Selector="Border:pointerover">
-                                                <Setter Property="Background" Value="#1a1a1a"/>
-                                            </Style>
-                                        </Border.Styles>
+                                    <Border Padding="10,6" 
+                                            CornerRadius="4"
+                                            Classes="listItem"
+                                            IsVisible="{Binding !IsPlaying}" 
+                                            DoubleTapped="OnPlaylistItemDoubleTapped">
                                         <Grid ColumnDefinitions="*, Auto, Auto, Auto" VerticalAlignment="Center">
                                             <TextBlock Grid.Column="0" Text="{Binding Name}" Foreground="#e0e0e0" FontWeight="Medium" FontSize="13" VerticalAlignment="Center"/>
                                             <!-- 缓存图标 -->
@@ -366,6 +381,29 @@
         <Style Selector="Slider">
             <Setter Property="Background" Value="#2a2a2a"/>
             <Setter Property="Foreground" Value="#1DB954"/>
+        </Style>
+
+        <!-- 搜索框样式 -->
+        <Style Selector="TextBox">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Foreground" Value="#e0e0e0"/>
+            <Setter Property="CaretBrush" Value="#1DB954"/>
+        </Style>
+        <Style Selector="TextBox:focus /template/ Border">
+            <Setter Property="BorderBrush" Value="#1DB954"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+
+        <!-- 列表项悬停效果 -->
+        <Style Selector="Border.listItem">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+        <Style Selector="Border.listItem:pointerover">
+            <Setter Property="Background" Value="#252525"/>
+            <Setter Property="BorderBrush" Value="#1DB954"/>
         </Style>
     </Window.Styles>
 </Window>
