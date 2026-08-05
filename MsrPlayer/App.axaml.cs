@@ -36,6 +36,7 @@ public partial class App : Application
         services.AddSingleton<ConfigService>();
         services.AddSingleton<LyricService>();
         services.AddSingleton<CacheService>();
+        services.AddSingleton<UpdateService>();
         services.AddSingleton<MainWindowViewModel>();
         _services = services.BuildServiceProvider();
     }
@@ -86,6 +87,10 @@ public partial class App : Application
                 var showItem = new NativeMenuItem { Header = "显示窗口" };
                 showItem.Click += (_, _) => ShowWindow();
                 menu.Items.Add(showItem);
+
+                var updateItem = new NativeMenuItem { Header = "检查更新" };
+                updateItem.Click += (_, _) => _services!.GetRequiredService<MainWindowViewModel>().CheckForUpdateCommand.Execute(null);
+                menu.Items.Add(updateItem);
 
                 var exitItem = new NativeMenuItem { Header = "退出" };
                 exitItem.Click += (_, _) => ExitApp();

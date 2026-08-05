@@ -1,0 +1,25 @@
+# 自动生成 Release Notes 的模板配置
+# 用法：合并 PR 时打上对应 label，发版时 gh release create --generate-notes 自动按类别分组
+# 参考：https://docs.github.com/zh/repositories/releasing-projects-on-github/automatically-generated-release-notes
+
+changelog:
+  exclude:
+    labels:
+      - ignore-for-release
+    authors:
+      - dependabot
+  categories:
+    - title: 🚀 新功能
+      labels:
+        - enhancement
+        - feature
+    - title: 🐛 修复
+      labels:
+        - bug
+        - fix
+    - title: 📄 文档
+      labels:
+        - documentation
+    - title: 其他变更
+      labels:
+        - "*"
