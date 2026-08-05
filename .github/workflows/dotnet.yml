@@ -23,7 +23,10 @@ jobs:
         dotnet-version: 10.0
         
     - name: restore dependencies
-      run: dotnet restore -r:win-x64
+      # 两个架构分别 restore（-r 不支持重复指定，分号在 -p 属性中会被 CLI 拆分）
+      run: |
+        dotnet restore -r:win-x64
+        dotnet restore -r:win-arm64
       
     - name: test
       run: dotnet test --no-restore
