@@ -207,6 +207,10 @@ dotnet publish -c Release -r win-x64 --self-contained
 - **私有字段**: `_camelCase` (如 `_audioService`)
 - **属性**: PascalCase (如 `CurrentIndex`)
 
+### 提交与注释
+- **提交记录**（git commit message）使用英文
+- **代码注释**（含 CI 配置、脚本注释）使用英文
+
 ### MVVM 属性定义
 ```csharp
 [ObservableProperty]

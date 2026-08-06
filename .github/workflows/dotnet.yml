@@ -9,7 +9,7 @@ on:
     tags: ['v*']
 
 jobs:
-  build:
+  build-and-release:
 
     runs-on: ubuntu-latest
     permissions:
@@ -33,8 +33,16 @@ jobs:
       if: github.ref_type == 'tag'
       run: dotnet tool install --global vpk --version 1.2.0
 
-    # 发布两个 Windows 架构（win-x64 / win-arm64），用独立 channel 区分产物命名
-    # 每个架构：拉上一版生成增量包 → 打包 → 安装包重命名（带架构+版本）→ 生成 SHA256
+    # Temporary diagnostic: print vpk pack verbose help (-H / --vhelp) to verify whether
+    # --msi / --instLocation are registered on Linux (remove after review)
+    - name: vpk pack help
+      if: github.ref_type == 'tag'
+      run: |
+        export PATH="$PATH:$HOME/.dotnet/tools"
+        vpk pack -H
+
+    # Publish two Windows architectures (win-x64 / win-arm64), distinguished by separate channels
+    # Per architecture: fetch previous release -> pack -> rename installer (arch+version) -> SHA256
     - name: publish and pack
       if: github.ref_type == 'tag'
       run: |
@@ -45,30 +53,31 @@ jobs:
           RID=${SPEC%%:*}
           CHANNEL=${SPEC##*:}
 
-          # publish 不带 --no-restore：SDK 会为当前 RID 自动补齐 assets（连续 restore -r 会互相覆盖，不可依赖）
+          # publish without --no-restore: the SDK implicitly restores the current RID
+          # (sequential 'dotnet restore -r' overwrites each other, cannot be relied on)
           dotnet publish MsrPlayer/MsrPlayer.csproj -o:release/$RID -r:$RID -p:Version=${VERSION}
 
-          # 拉取上一版本产物用于生成增量更新包；首次发布（无上一版本）时忽略失败
+          # Fetch previous release artifacts for delta updates; ignore failure on first release
           vpk download github --repoUrl https://github.com/mikezw/msrplayer -c ${CHANNEL} || true
 
-          # 代码签名（可选）：准备好证书后，在 pack 命令追加签名参数
+          # Code signing (optional): append signing args to the pack command once a cert is ready
           #   Azure Trusted Signing: --azureTrustedSignFile <metadata.json>
-          #   已有证书: --signTemplate "signtool sign /f <cert.pfx> /p <密码> {{file}}"
-          # 注意：runner 是 Linux，打包 Windows 包必须用 OS 指令 [win]（System.CommandLine directive，方括号语法；
-          # 无指令时目标 OS 默认为当前系统，直接 vpk pack 会报 "target rid must be Linux"）
-          # --msi --instLocation Either：额外生成 MSI 安装包，安装时用户可选择 PerUser/PerMachine
-          vpk '[win]' pack --packId MsrPlayer --packVersion ${VERSION} --packDir release/$RID --packTitle "Monster Siren Player" --mainExe MsrPlayer.exe --icon MsrPlayer/Assets/music-icon.ico --runtime ${RID} --channel ${CHANNEL} --msi --instLocation Either
+          #   Existing cert: --signTemplate "signtool sign /f <cert.pfx> /p <password> {{file}}"
+          # Note: the runner is Linux, so packing Windows packages requires the [win] OS directive
+          # (System.CommandLine directive; brackets are part of the syntax. Without it the target OS
+          # defaults to the current system and vpk pack fails with "target rid must be Linux")
+          # --msi temporarily removed: MSI is Windows-only and unregistered on Linux runners (revisit after review)
+          vpk '[win]' pack --packId MsrPlayer --packVersion ${VERSION} --packDir release/$RID --packTitle "Monster Siren Player" --mainExe MsrPlayer.exe --icon MsrPlayer/Assets/music-icon.ico --runtime ${RID} --channel ${CHANNEL}
 
-          # 安装包重命名（带架构+版本后缀），便于用户识别；不影响自动更新（更新源只引用 nupkg）
+          # Rename installer (arch+version suffix) for user recognition; auto-update is unaffected
+          # (update feeds only reference the nupkg)
           mv Releases/MsrPlayer-${CHANNEL}-Setup.exe Releases/MsrPlayer-${RID}-${VERSION}-Setup.exe
-          mv Releases/MsrPlayer-${CHANNEL}.msi Releases/MsrPlayer-${RID}-${VERSION}.msi
 
-          # 仅对安装文件（Setup.exe / MSI）生成 SHA256 校验值
+          # SHA256 only for the installer
           (cd Releases && sha256sum MsrPlayer-${RID}-${VERSION}-Setup.exe > MsrPlayer-${RID}-${VERSION}-Setup.exe.sha256)
-          (cd Releases && sha256sum MsrPlayer-${RID}-${VERSION}.msi > MsrPlayer-${RID}-${VERSION}.msi.sha256)
         done
 
-    # 上传全部产物到 GitHub Release（gh 上传任意文件，不受 vpk 资产类型限制）
+    # Upload all artifacts to the GitHub Release (gh uploads any file, not limited to vpk asset types)
     - name: release
       if: github.ref_type == 'tag'
       run: |
