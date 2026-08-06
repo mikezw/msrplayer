@@ -35,14 +35,6 @@ jobs:
       if: github.ref_type == 'tag'
       run: dotnet tool install --global vpk --version 1.2.0
 
-    # Temporary diagnostic: print vpk pack verbose help (-H / --vhelp) (remove after review)
-    - name: vpk pack help
-      if: github.ref_type == 'tag'
-      shell: bash
-      run: |
-        export PATH="$PATH:$HOME/.dotnet/tools"
-        vpk pack -H
-
     # Publish two Windows architectures (win-x64 / win-arm64), distinguished by separate channels
     # Per architecture: fetch previous release -> pack -> rename installer (arch+version) -> SHA256
     - name: publish and pack
