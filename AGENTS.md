@@ -15,6 +15,7 @@ MSR Player 是一个基于 Avalonia UI 的跨平台桌面音乐播放器，用�
 - 音频缓存系统（边下边播）
 - 系统托盘支持
 - 单实例运行（重复启动时唤醒已有实例）
+- 自动更新（Velopack）
 
 ## 技术栈
 
@@ -44,7 +45,8 @@ MsrPlayer/
 │   ├── CacheService.cs     # 缓存管理
 │   ├── ConfigService.cs    # 配置持久化
 │   ├── LyricService.cs     # 歌词解析
-│   └── PlaylistService.cs  # 播放列表持久化
+│   ├── PlaylistService.cs  # 播放列表持久化
+│   └── UpdateService.cs    # Velopack 自动更新
 │
 ├── ViewModels/          # MVVM ViewModel层
 │   ├── ViewModelBase.cs             # MVVM基类
@@ -75,6 +77,7 @@ services.AddSingleton<PlaylistService>();
 services.AddSingleton<ConfigService>();
 services.AddSingleton<LyricService>();
 services.AddSingleton<CacheService>();
+services.AddSingleton<UpdateService>();
 services.AddSingleton<MainWindowViewModel>();
 ```
 
@@ -206,8 +209,8 @@ dotnet publish -c Release -r win-x64 --self-contained
 
 ### CI/CD
 - GitHub Actions: `.github/workflows/dotnet.yml`
-- 触发方式: `workflow_dispatch` (手动)
-- 步骤: restore → build → publish → package
+- 触发方式: 自动（推送 `v*` 格式 tag）+ 手动 `workflow_dispatch`
+- 步骤: restore → test → publish → pack → release（publish 及后续步骤仅 tag 触发时执行）
 
 ## 代码规范
 
@@ -286,18 +289,11 @@ partial void OnPropertyNameChanged(string value)
 
 ## 已知限制
 
-1. **无测试覆盖**: 项目当前无自动化测试
-2. **手动CI触发**: CI 需要手动触发，未配置自动触发
-3. **平台限制**: NAudio 主要支持 Windows，Linux/macOS 需要替换音频库
+1. **平台限制**: NAudio 主要支持 Windows，Linux/macOS 需要替换音频库
 
 ## 扩展建议
 
 ### 优先级高
-1. 添加单元测试项目（xUnit/NUnit）
-2. 配置 CI 自动触发（push/pull_request）
-3. 添加测试步骤到 CI workflow
-
-### 优先级中
 1. 实现歌词滚动效果（当前位置高亮）
 2. 添加专辑封面显示
 3. 支持播放历史记录
