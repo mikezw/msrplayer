@@ -11,7 +11,9 @@ on:
 jobs:
   build-and-release:
 
-    runs-on: ubuntu-latest
+    # MSI generation (--msi) requires the WiX 5 toolchain, which is only available on Windows,
+    # so this job runs on a Windows runner
+    runs-on: windows-latest
     permissions:
       contents: write
 
@@ -23,7 +25,7 @@ jobs:
         dotnet-version: 10.0
         
     - name: restore dependencies
-      # 无 RID 恢复（为构建/测试提供基础 assets）；各架构的 RID 由 publish 隐式 restore 补齐
+      # RID-less restore for build/test; per-RID assets are filled by publish's implicit restore
       run: dotnet restore
       
     - name: test
@@ -33,10 +35,10 @@ jobs:
       if: github.ref_type == 'tag'
       run: dotnet tool install --global vpk --version 1.2.0
 
-    # Temporary diagnostic: print vpk pack verbose help (-H / --vhelp) to verify whether
-    # --msi / --instLocation are registered on Linux (remove after review)
+    # Temporary diagnostic: print vpk pack verbose help (-H / --vhelp) (remove after review)
     - name: vpk pack help
       if: github.ref_type == 'tag'
+      shell: bash
       run: |
         export PATH="$PATH:$HOME/.dotnet/tools"
         vpk pack -H
@@ -45,6 +47,7 @@ jobs:
     # Per architecture: fetch previous release -> pack -> rename installer (arch+version) -> SHA256
     - name: publish and pack
       if: github.ref_type == 'tag'
+      shell: bash
       run: |
         set -e
         export PATH="$PATH:$HOME/.dotnet/tools"
@@ -63,23 +66,26 @@ jobs:
           # Code signing (optional): append signing args to the pack command once a cert is ready
           #   Azure Trusted Signing: --azureTrustedSignFile <metadata.json>
           #   Existing cert: --signTemplate "signtool sign /f <cert.pfx> /p <password> {{file}}"
-          # Note: the runner is Linux, so packing Windows packages requires the [win] OS directive
-          # (System.CommandLine directive; brackets are part of the syntax. Without it the target OS
-          # defaults to the current system and vpk pack fails with "target rid must be Linux")
-          # --msi temporarily removed: MSI is Windows-only and unregistered on Linux runners (revisit after review)
-          vpk '[win]' pack --packId MsrPlayer --packVersion ${VERSION} --packDir release/$RID --packTitle "Monster Siren Player" --mainExe MsrPlayer.exe --icon MsrPlayer/Assets/music-icon.ico --runtime ${RID} --channel ${CHANNEL}
+          # The [win] directive is not required on a Windows runner (target OS defaults to the
+          # current system); keeping it is harmless
+          # --msi --instLocation Either: also generate an MSI installer; the user chooses
+          # PerUser/PerMachine scope during installation
+          vpk '[win]' pack --packId MsrPlayer --packVersion ${VERSION} --packDir release/$RID --packTitle "Monster Siren Player" --mainExe MsrPlayer.exe --icon MsrPlayer/Assets/music-icon.ico --runtime ${RID} --channel ${CHANNEL} --msi --instLocation Either
 
-          # Rename installer (arch+version suffix) for user recognition; auto-update is unaffected
+          # Rename installers (arch+version suffix) for user recognition; auto-update is unaffected
           # (update feeds only reference the nupkg)
           mv Releases/MsrPlayer-${CHANNEL}-Setup.exe Releases/MsrPlayer-${RID}-${VERSION}-Setup.exe
+          mv Releases/MsrPlayer-${CHANNEL}.msi Releases/MsrPlayer-${RID}-${VERSION}.msi
 
-          # SHA256 only for the installer
+          # SHA256 only for the installers (Setup.exe / MSI)
           (cd Releases && sha256sum MsrPlayer-${RID}-${VERSION}-Setup.exe > MsrPlayer-${RID}-${VERSION}-Setup.exe.sha256)
+          (cd Releases && sha256sum MsrPlayer-${RID}-${VERSION}.msi > MsrPlayer-${RID}-${VERSION}.msi.sha256)
         done
 
     # Upload all artifacts to the GitHub Release (gh uploads any file, not limited to vpk asset types)
     - name: release
       if: github.ref_type == 'tag'
+      shell: bash
       run: |
         gh release create ${GITHUB_REF_NAME} --generate-notes || true
         gh release upload ${GITHUB_REF_NAME} Releases/* --clobber

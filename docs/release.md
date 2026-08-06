@@ -18,10 +18,13 @@ Velopack 通过 **独立 channel** 区分不同架构，产物命名自动携带
 |----|---------|-----------|
 | vpk channel | `win`（默认） | `win-arm64` |
 | 安装包 | `MsrPlayer-win-x64-{版本}-Setup.exe` | `MsrPlayer-win-arm64-{版本}-Setup.exe` |
+| MSI 安装包 | `MsrPlayer-win-x64-{版本}.msi` | `MsrPlayer-win-arm64-{版本}.msi` |
 | 更新包 | `MsrPlayer-{版本}-full.nupkg` | `MsrPlayer-{版本}-win-arm64-full.nupkg` |
 | 便携版 | `MsrPlayer-win-Portable.zip` | `MsrPlayer-win-arm64-Portable.zip` |
 | 更新源 | `releases.win.json` | `releases.win-arm64.json` |
 | 增量清单 | `RELEASES` | `RELEASES-win-arm64` |
+
+**安装方式**：`Setup.exe` 为一键静默安装（固定安装到 `%LocalAppData%\MsrPlayer`，无路径选择，Velopack 设计如此）；`.msi`（`--instLocation Either`）安装时可由用户选择安装作用域（PerUser → `%LocalAppData%` / PerMachine → `Program Files`），更新机制与 Setup.exe 完全一致。
 
 **更新机制自洽**：安装器会记录安装时的 channel，客户端检查更新时自动读取对应架构的更新源（arm64 机器读 `releases.win-arm64.json`，x64 机器读 `releases.win.json`），两个架构互不干扰。
 
@@ -38,9 +41,9 @@ tag 推送后的步骤：
 2. **publish and pack**（bash 循环两个架构 `"win-x64:win" "win-arm64:win-arm64"`）：
    - `dotnet publish -r:{RID} -p:Version={版本}`：**不带 `--no-restore`**，SDK 隐式 restore 自动补齐当前 RID 的 assets（不能手动连续 `dotnet restore -r`，后一次会覆盖前一次的 RID target）
    - `vpk download github -c {CHANNEL} || true`：拉取上一版本产物用于生成增量更新包（首次发布无上一版本，忽略失败）
-   - `vpk '[win]' pack --runtime {RID} --channel {CHANNEL}`：生成安装包、全量更新包、便携版、更新源。runner 为 Linux，打包 Windows 包必须加 OS 指令 `[win]`（vpk 的 System.CommandLine directive，**方括号是语法的一部分**；无指令时目标 OS 默认当前系统，`vpk pack` 会报 "target rid must be Linux"）
-   - 安装包重命名：`MsrPlayer-{CHANNEL}-Setup.exe` → `MsrPlayer-{RID}-{版本}-Setup.exe`（带架构 + 版本后缀，便于用户识别；不影响自动更新，更新源只引用 nupkg）
-   - 仅对安装包生成 SHA256 校验文件（`*.sha256`），其他产物不生成
+   - `vpk '[win]' pack --runtime {RID} --channel {CHANNEL} --msi --instLocation Either`：生成安装包、MSI 安装包（安装时可选 PerUser/PerMachine）、全量更新包、便携版、更新源。CI 使用 Windows runner（MSI 生成依赖 WiX 5 工具链，仅 Windows 支持）；`[win]` 指令在 Windows 上非必需，保留无影响
+   - 安装包重命名：`MsrPlayer-{CHANNEL}-Setup.exe` → `MsrPlayer-{RID}-{版本}-Setup.exe`、`MsrPlayer-{CHANNEL}.msi` → `MsrPlayer-{RID}-{版本}.msi`（带架构 + 版本后缀，便于用户识别；不影响自动更新，更新源只引用 nupkg）
+   - 仅对安装文件（Setup.exe / MSI）生成 SHA256 校验文件（`*.sha256`），其他产物不生成
 3. **release**：`gh release create {tag} --generate-notes` + `gh release upload Releases/* --clobber`，全部产物上传到对应 tag 的 GitHub Release
 
 > 说明：不使用 `vpk upload`，因为它只识别 Velopack 标准资产，重命名后的安装包和 `.sha256` 文件可能被遗漏；`gh release upload` 可上传任意文件。使用 `--clobber` 覆盖同 tag 重跑的上传。
@@ -49,10 +52,14 @@ tag 推送后的步骤：
 
 | 资产 | 说明 |
 |------|------|
-| `MsrPlayer-win-x64-1.0.0-Setup.exe` | x64 安装包（用户下载） |
+| `MsrPlayer-win-x64-1.0.0-Setup.exe` | x64 安装包（一键安装，无需管理员） |
 | `MsrPlayer-win-x64-1.0.0-Setup.exe.sha256` | x64 安装包校验值 |
-| `MsrPlayer-win-arm64-1.0.0-Setup.exe` | arm64 安装包（用户下载） |
+| `MsrPlayer-win-x64-1.0.0.msi` | x64 MSI 安装包（安装时可选安装作用域） |
+| `MsrPlayer-win-x64-1.0.0.msi.sha256` | x64 MSI 安装包校验值 |
+| `MsrPlayer-win-arm64-1.0.0-Setup.exe` | arm64 安装包（一键安装，无需管理员） |
 | `MsrPlayer-win-arm64-1.0.0-Setup.exe.sha256` | arm64 安装包校验值 |
+| `MsrPlayer-win-arm64-1.0.0.msi` | arm64 MSI 安装包（安装时可选安装作用域） |
+| `MsrPlayer-win-arm64-1.0.0.msi.sha256` | arm64 MSI 安装包校验值 |
 | `MsrPlayer-1.0.0-full.nupkg` | x64 全量更新包 |
 | `MsrPlayer-1.0.0-win-arm64-full.nupkg` | arm64 全量更新包 |
 | `MsrPlayer-win-Portable.zip` | x64 便携版 |
