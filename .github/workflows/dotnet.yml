@@ -66,11 +66,11 @@ jobs:
           # Code signing (optional): append signing args to the pack command once a cert is ready
           #   Azure Trusted Signing: --azureTrustedSignFile <metadata.json>
           #   Existing cert: --signTemplate "signtool sign /f <cert.pfx> /p <password> {{file}}"
-          # The [win] directive is not required on a Windows runner (target OS defaults to the
-          # current system); keeping it is harmless
+          # No OS directive needed: the runner is Windows, so the target OS already defaults
+          # to the current system ([win] was only required for cross-compiling on Linux)
           # --msi --instLocation Either: also generate an MSI installer; the user chooses
           # PerUser/PerMachine scope during installation
-          vpk '[win]' pack --packId MsrPlayer --packVersion ${VERSION} --packDir release/$RID --packTitle "Monster Siren Player" --mainExe MsrPlayer.exe --icon MsrPlayer/Assets/music-icon.ico --runtime ${RID} --channel ${CHANNEL} --msi --instLocation Either
+          vpk pack --packId MsrPlayer --packVersion ${VERSION} --packDir release/$RID --packTitle "Monster Siren Player" --mainExe MsrPlayer.exe --icon MsrPlayer/Assets/music-icon.ico --runtime ${RID} --channel ${CHANNEL} --msi --instLocation Either
 
           # Rename installers (arch+version suffix) for user recognition; auto-update is unaffected
           # (update feeds only reference the nupkg)
