@@ -4,6 +4,7 @@ using Avalonia.Platform.Storage;
 using Avalonia.VisualTree;
 using MsrPlayer.Models;
 using MsrPlayer.ViewModels;
+using System.Reflection;
 
 namespace MsrPlayer.Views;
 
@@ -12,6 +13,13 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+
+        // 标题追加版本号（发布版本由 CI 通过 -p:Version 注入，本地开发为 0.0.0）
+        var version = Assembly.GetExecutingAssembly().GetName().Version;
+        if (version is not null)
+        {
+            Title = $"Monster Siren Player v{version.Major}.{version.Minor}.{version.Build}";
+        }
     }
 
     private void OnSongDoubleTapped(object? sender, TappedEventArgs e)

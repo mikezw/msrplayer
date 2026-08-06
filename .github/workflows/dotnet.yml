@@ -56,13 +56,16 @@ jobs:
           #   已有证书: --signTemplate "signtool sign /f <cert.pfx> /p <密码> {{file}}"
           # 注意：runner 是 Linux，打包 Windows 包必须用 OS 指令 [win]（System.CommandLine directive，方括号语法；
           # 无指令时目标 OS 默认为当前系统，直接 vpk pack 会报 "target rid must be Linux"）
-          vpk '[win]' pack --packId MsrPlayer --packVersion ${VERSION} --packDir release/$RID --packTitle "Monster Siren Player" --mainExe MsrPlayer.exe --icon MsrPlayer/Assets/music-icon.ico --runtime ${RID} --channel ${CHANNEL}
+          # --msi --instLocation Either：额外生成 MSI 安装包，安装时用户可选择 PerUser/PerMachine
+          vpk '[win]' pack --packId MsrPlayer --packVersion ${VERSION} --packDir release/$RID --packTitle "Monster Siren Player" --mainExe MsrPlayer.exe --icon MsrPlayer/Assets/music-icon.ico --runtime ${RID} --channel ${CHANNEL} --msi --instLocation Either
 
           # 安装包重命名（带架构+版本后缀），便于用户识别；不影响自动更新（更新源只引用 nupkg）
           mv Releases/MsrPlayer-${CHANNEL}-Setup.exe Releases/MsrPlayer-${RID}-${VERSION}-Setup.exe
+          mv Releases/MsrPlayer-${CHANNEL}.msi Releases/MsrPlayer-${RID}-${VERSION}.msi
 
-          # 仅对安装文件生成 SHA256 校验值
+          # 仅对安装文件（Setup.exe / MSI）生成 SHA256 校验值
           (cd Releases && sha256sum MsrPlayer-${RID}-${VERSION}-Setup.exe > MsrPlayer-${RID}-${VERSION}-Setup.exe.sha256)
+          (cd Releases && sha256sum MsrPlayer-${RID}-${VERSION}.msi > MsrPlayer-${RID}-${VERSION}.msi.sha256)
         done
 
     # 上传全部产物到 GitHub Release（gh 上传任意文件，不受 vpk 资产类型限制）
