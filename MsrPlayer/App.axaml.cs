@@ -1,10 +1,12 @@
 using System;
+using System.Threading;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Media.Imaging;
 using Avalonia.Markup.Xaml;
 using Avalonia.Platform;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
 using MsrPlayer.Services;
@@ -19,6 +21,7 @@ public partial class App : Application
     private TrayIcon? _trayIcon;
     private WindowIcon? _appIcon;
     private IServiceProvider? _services;
+    private CancellationTokenSource? _singleInstanceCts;
 
     public override void Initialize()
     {
@@ -59,6 +62,7 @@ public partial class App : Application
             desktop.MainWindow = _mainWindow;
 
             CreateTrayIcon();
+            StartSingleInstanceListener();
         }
 
         base.OnFrameworkInitializationCompleted();
@@ -112,6 +116,33 @@ public partial class App : Application
         }
     }
 
+    /// <summary>
+    /// Listens for activation requests from a second instance and shows
+    /// the window on the UI thread when one arrives.
+    /// </summary>
+    private void StartSingleInstanceListener()
+    {
+        _singleInstanceCts = new CancellationTokenSource();
+        _ = SingleInstanceManager.StartListenerAsync(ShowWindowFromListener, _singleInstanceCts.Token);
+    }
+
+    /// <summary>
+    /// Shows the window on the UI thread and returns its native handle so
+    /// the second instance can bring it to the foreground.
+    /// </summary>
+    private string? ShowWindowFromListener()
+    {
+        string? handle = null;
+        Dispatcher.UIThread.InvokeAsync(() =>
+        {
+            ShowWindow();
+            handle = _mainWindow?.TryGetPlatformHandle() is { } platformHandle && platformHandle.Handle != IntPtr.Zero
+                ? platformHandle.Handle.ToString()
+                : null;
+        }).GetAwaiter().GetResult();
+        return handle;
+    }
+
     private void OnMainWindowClosing(object? sender, WindowClosingEventArgs e)
     {
         e.Cancel = true;
@@ -123,6 +154,11 @@ public partial class App : Application
     {
         if (_mainWindow != null)
         {
+            if (_mainWindow.WindowState == WindowState.Minimized)
+            {
+                _mainWindow.WindowState = WindowState.Normal;
+            }
+
             _mainWindow.Show();
             _mainWindow.Activate();
         }
@@ -131,6 +167,10 @@ public partial class App : Application
     [RelayCommand]
     private void ExitApp()
     {
+        _singleInstanceCts?.Cancel();
+        _singleInstanceCts?.Dispose();
+        _singleInstanceCts = null;
+
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             if (_mainWindow != null)

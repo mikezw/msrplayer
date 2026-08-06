@@ -14,6 +14,7 @@ MSR Player 是一个基于 Avalonia UI 的跨平台桌面音乐播放器，用�
 - 实时歌词显示（LRC格式）
 - 音频缓存系统（边下边播）
 - 系统托盘支持
+- 单实例运行（重复启动时唤醒已有实例）
 
 ## 技术栈
 
@@ -53,7 +54,9 @@ MsrPlayer/
 │   ├── MainWindow.axaml            # 主窗口XAML
 │   └── MainWindow.axaml.cs         # 主窗口代码后台
 │
-└── App.axaml.cs         # 应用程序入口与依赖注入配置
+├── Program.cs                # 程序入口（含单实例保护）
+├── SingleInstanceManager.cs  # 单实例检测与唤醒（Mutex + NamedPipe）
+└── App.axaml.cs              # 应用程序入口与依赖注入配置
 ```
 
 ### 设计模式
@@ -133,6 +136,13 @@ services.AddSingleton<MainWindowViewModel>();
 - `CurrentIndex`: 当前播放索引
 - `CurrentMode`: 播放模式
 - `SearchText`: 搜索文本
+
+### 5. SingleInstanceManager - 单实例管理
+**职责**: 保证程序只有一个实例运行，重复启动时唤醒已有实例（不启动新进程）
+- 命名 Mutex 检测实例唯一性（在 `Program.Main` 中获取，获取失败则通知已有实例后退出）
+- 命名管道 IPC 握手：第二实例发送 `ShowWindow` 命令，第一实例在 UI 线程显示窗口并把窗口句柄回传
+- 由第二实例（用户刚启动、拥有前台权限）调用 `SetForegroundWindow` 置前窗口，规避 Windows 前台锁限制（第一实例自身调用会被系统拒绝）
+- 主程序代码不含 Windows API，唯一的 user32 调用位于第二实例的退出路径（仅 Windows 生效，其他平台由第一实例的 `Activate()` 兜底）
 
 ## UI设计规范
 
