@@ -29,10 +29,6 @@ jobs:
     - name: test
       run: dotnet test --no-restore
 
-    - name: publish
-      if: github.ref_type == 'tag'
-      run: dotnet publish MsrPlayer/MsrPlayer.csproj --no-restore -o:release/win-x64 -r:win-x64 -p:Version=${GITHUB_REF_NAME#v}
-
     - name: install vpk
       if: github.ref_type == 'tag'
       run: dotnet tool install --global vpk --version 1.2.0

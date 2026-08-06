@@ -34,9 +34,9 @@ Velopack 通过 **独立 channel** 区分不同架构，产物命名自动携带
 
 tag 推送后的步骤：
 
-1. **构建 + 测试**：`dotnet restore` → `dotnet build` → `dotnet test`
+1. **构建 + 测试**：`dotnet restore`（无 RID，提供基础 assets）→ `dotnet test --no-restore`（test 步骤隐含构建）
 2. **publish and pack**（bash 循环两个架构 `"win-x64:win" "win-arm64:win-arm64"`）：
-   - `dotnet publish -r:{RID} -p:Version={版本}`
+   - `dotnet publish -r:{RID} -p:Version={版本}`：**不带 `--no-restore`**，SDK 隐式 restore 自动补齐当前 RID 的 assets（不能手动连续 `dotnet restore -r`，后一次会覆盖前一次的 RID target）
    - `vpk download github -c {CHANNEL} || true`：拉取上一版本产物用于生成增量更新包（首次发布无上一版本，忽略失败）
    - `vpk '[win]' pack --runtime {RID} --channel {CHANNEL}`：生成安装包、全量更新包、便携版、更新源。runner 为 Linux，打包 Windows 包必须加 OS 指令 `[win]`（vpk 的 System.CommandLine directive，**方括号是语法的一部分**；无指令时目标 OS 默认当前系统，`vpk pack` 会报 "target rid must be Linux"）
    - 安装包重命名：`MsrPlayer-{CHANNEL}-Setup.exe` → `MsrPlayer-{RID}-{版本}-Setup.exe`（带架构 + 版本后缀，便于用户识别；不影响自动更新，更新源只引用 nupkg）
