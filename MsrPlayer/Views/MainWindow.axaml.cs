@@ -14,7 +14,7 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
 
-        // 标题追加版本号（发布版本由 CI 通过 -p:Version 注入，本地开发为 0.0.0）
+        // Appends version number to title (release versions are injected via CI with -p:Version, local development is 0.0.0)
         var version = Assembly.GetExecutingAssembly().GetName().Version;
         if (version is not null)
         {
@@ -96,7 +96,7 @@ public partial class MainWindow : Window
             var storageProvider = StorageProvider;
             var folders = await storageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
             {
-                Title = "选择缓存目录",
+                Title = vm.SelectCacheDirectoryTitle,
                 AllowMultiple = false
             });
 

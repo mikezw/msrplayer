@@ -55,6 +55,8 @@ public class PlayerConfig
     public string CacheDirectory { get; set; } = string.Empty;
 
     public bool EnableCache { get; set; } = true;
+
+    public AppLanguage Language { get; set; } = AppLanguage.English;
 }
 
 public enum PlayMode
