@@ -17,7 +17,7 @@
     </Design.DataContext>
 
     <Grid RowDefinitions="Auto, *" Margin="0">
-        <!-- 更新提示横幅 -->
+        <!-- Update banner -->
         <Border Grid.Row="0" Background="#1DB954" Padding="14,6" IsVisible="{Binding IsUpdateVisible}">
             <Grid ColumnDefinitions="Auto, *, Auto" VerticalAlignment="Center">
                 <TextBlock Grid.Column="0" Text="{Binding UpdateBannerText}" Foreground="#0a0a0a" FontSize="12" FontWeight="Bold" VerticalAlignment="Center"/>
@@ -27,16 +27,16 @@
         </Border>
 
         <Grid Grid.Row="1" ColumnDefinitions="4*, 3*, 3*" Margin="0">
-        <!-- 第一列：歌曲列表 -->
+        <!-- Column 1: Song list -->
         <Border Background="#121212">
             <DockPanel Margin="16,16">
-                <!-- 标题区 -->
+                <!-- Title area -->
                 <StackPanel DockPanel.Dock="Top" Spacing="6">
-                    <TextBlock Text="歌曲列表" FontSize="18" FontWeight="Bold" Foreground="White"/>
-                    <TextBlock Text="双击添加到播放列表" Foreground="#a0a0a0" FontSize="12"/>
+                    <TextBlock Text="{Binding SongListTitle}" FontSize="18" FontWeight="Bold" Foreground="White"/>
+                    <TextBlock Text="{Binding DoubleClickToAddHint}" Foreground="#a0a0a0" FontSize="12"/>
                 </StackPanel>
 
-                <!-- 搜索框 -->
+                <!-- Search box -->
                 <Border DockPanel.Dock="Top"
                         Background="#1e1e1e"
                         BorderBrush="#2a2a2a"
@@ -48,7 +48,7 @@
                         <TextBlock Grid.Column="0" Text="🔍" FontSize="14" Foreground="#606060" Margin="0,0,8,0" VerticalAlignment="Center"/>
                         <TextBox Grid.Column="1"
                                  Text="{Binding SearchText, Mode=TwoWay}"
-                                 PlaceholderText="搜索歌曲..."
+                                 PlaceholderText="{Binding SearchPlaceholder}"
                                  Background="Transparent"
                                  BorderThickness="0"
                                  Foreground="#e0e0e0"
@@ -56,7 +56,7 @@
                     </Grid>
                 </Border>
 
-                <!-- 状态 -->
+                <!-- Status -->
                 <Border DockPanel.Dock="Top"
                         Background="#1e1e1e"
                         CornerRadius="6"
@@ -65,7 +65,7 @@
                     <TextBlock Text="{Binding StatusText}" Foreground="#1DB954" FontSize="12" TextWrapping="Wrap"/>
                 </Border>
 
-                <!-- 歌曲列表 -->
+                <!-- Song list -->
                 <ScrollViewer>
                     <ItemsControl ItemsSource="{Binding Songs}" x:Name="SongsList">
                         <ItemsControl.ItemTemplate>
@@ -75,7 +75,7 @@
                                         Classes="listItem"
                                         DoubleTapped="OnSongDoubleTapped">
                                     <Grid ColumnDefinitions="Auto, *" VerticalAlignment="Center">
-                                        <!-- 添加按钮 -->
+                                        <!-- Add button -->
                                         <Border Grid.Column="0"
                                                 Width="28" Height="28"
                                                 Background="#1DB954"
@@ -96,7 +96,7 @@
                                                        VerticalAlignment="Center"/>
                                         </Border>
 
-                                        <!-- 歌曲信息 -->
+                                        <!-- Song info -->
                                         <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
                                             <TextBlock Text="{Binding Name}"
                                                        Foreground="#e0e0e0"
@@ -115,16 +115,16 @@
             </DockPanel>
         </Border>
 
-        <!-- 第二列：播放控制区 -->
+        <!-- Column 2: Playback controls -->
         <DockPanel Margin="16,16" Grid.Column="1" Background="#0a0a0a">
-            <!-- 当前播放信息 -->
+            <!-- Current playback info -->
             <Border DockPanel.Dock="Top"
                     Background="#1e1e1e"
                     CornerRadius="8"
                     Padding="12"
                     Margin="0,0,0,10">
                 <StackPanel Spacing="6" HorizontalAlignment="Center">
-                    <TextBlock Text="正在播放"
+                    <TextBlock Text="{Binding NowPlayingTitle}"
                                FontSize="11"
                                Foreground="#808080"
                                HorizontalAlignment="Center"/>
@@ -139,14 +139,14 @@
                 </StackPanel>
             </Border>
 
-            <!-- 控制区域 -->
+            <!-- Control area -->
             <Border DockPanel.Dock="Top"
                     Background="#1e1e1e"
                     CornerRadius="8"
                     Padding="12"
                     Margin="0,0,0,10">
                 <StackPanel Spacing="10">
-                    <!-- 播放进度 -->
+                    <!-- Playback progress -->
                     <Grid Margin="0,2">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
@@ -162,7 +162,7 @@
                         <TextBlock Grid.Column="2" Text="{Binding TotalTimeText}" FontSize="11" Foreground="#909090" VerticalAlignment="Center" Width="36"/>
                     </Grid>
 
-                    <!-- 播放控制按钮 -->
+                    <!-- Playback control buttons -->
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="12">
                         <Button Command="{Binding PrevCommand}" Classes="ctrlBtn" Width="40" Height="40" CornerRadius="20"
                                 HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
@@ -181,9 +181,9 @@
                         </Button>
                     </StackPanel>
 
-                    <!-- 播放模式 + 音量 -->
+                    <!-- Play mode + volume + language -->
                     <Grid RowDefinitions="Auto, Auto, Auto" Margin="0,6">
-                        <!-- 播放模式 + 缓存开关 -->
+                        <!-- Play mode + cache toggle -->
                         <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
                             <Button Command="{Binding ToggleLoopModeCommand}"
                                     Classes="modeBtn"
@@ -212,11 +212,24 @@
                             <Slider Minimum="0" Maximum="100" Value="{Binding Volume}" Width="70" VerticalAlignment="Center"/>
                             <TextBlock Text="{Binding Volume, StringFormat='{}{0}%'}" FontSize="11" Foreground="#a0a0a0" Width="26" VerticalAlignment="Center"/>
                         </StackPanel>
+
+                        <!-- Language toggle -->
+                        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,6,0,0">
+                            <Button Command="{Binding ToggleLanguageCommand}"
+                                    Classes="modeBtn"
+                                    Height="28"
+                                    MinWidth="90"
+                                    CornerRadius="5"
+                                    HorizontalContentAlignment="Center"
+                                    VerticalContentAlignment="Center">
+                                <TextBlock Text="{Binding LanguageButtonText}" FontSize="12" FontWeight="Medium" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Button>
+                        </StackPanel>
                     </Grid>
                 </StackPanel>
             </Border>
 
-            <!-- 歌词显示区域 - 固定高度 -->
+            <!-- Lyrics display area - fixed height -->
             <Border DockPanel.Dock="Top"
                     Background="#1e1e1e"
                     CornerRadius="8"
@@ -225,7 +238,7 @@
                     Height="100"
                     IsVisible="{Binding HasLyrics}">
                 <StackPanel Spacing="8" VerticalAlignment="Center">
-                    <TextBlock Text="歌词"
+                    <TextBlock Text="{Binding LyricsTitle}"
                                FontSize="11"
                                Foreground="#606060"
                                HorizontalAlignment="Center"/>
@@ -240,24 +253,24 @@
                 </StackPanel>
             </Border>
 
-            <!-- 填充剩余空间 -->
+            <!-- Fill remaining space -->
             <Border Background="#0a0a0a"/>
         </DockPanel>
 
-        <!-- 第三列：播放列表 -->
+        <!-- Column 3: Playlist -->
         <Border Grid.Column="2" Background="#121212">
             <DockPanel Margin="16,16">
-                <!-- 标题 -->
+                <!-- Title -->
                 <Grid DockPanel.Dock="Top" Margin="0,0,0,8">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0" Spacing="4">
-                        <TextBlock Text="播放列表" FontSize="18" FontWeight="Bold" Foreground="#e0e0e0"/>
-                        <TextBlock Text="双击播放 · × 移除 · ↻ 更新缓存" Foreground="#606060" FontSize="11"/>
+                        <TextBlock Text="{Binding PlaylistTitle}" FontSize="18" FontWeight="Bold" Foreground="#e0e0e0"/>
+                        <TextBlock Text="{Binding PlaylistHint}" Foreground="#606060" FontSize="11"/>
                     </StackPanel>
-                    <!-- 缓存设置按钮 -->
+                    <!-- Cache settings button -->
                     <Border Grid.Column="1" Width="26" Height="26" Background="#2a2a2a" CornerRadius="4"
                             Tapped="OnCacheSettingsTapped" Cursor="Hand" VerticalAlignment="Top">
                         <Border.Styles>
@@ -269,13 +282,13 @@
                     </Border>
                 </Grid>
 
-                <!-- 播放列表 -->
+                <!-- Playlist -->
                 <ScrollViewer>
                     <ItemsControl ItemsSource="{Binding Playlist}" x:Name="PlaylistCtrl">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Panel>
-                                    <!-- 正在播放时的样式 -->
+                                    <!-- Style when playing -->
                                     <Border Padding="10,6"
                                             Background="#1DB954"
                                             BorderThickness="1"
@@ -285,22 +298,22 @@
                                         <Grid ColumnDefinitions="Auto, *, Auto, Auto, Auto" VerticalAlignment="Center">
                                             <TextBlock Grid.Column="0" Text="♪" FontSize="12" Foreground="Black" FontWeight="Bold" Margin="0,0,6,0" VerticalAlignment="Center"/>
                                             <TextBlock Grid.Column="1" Text="{Binding Name}" Foreground="Black" FontWeight="Bold" FontSize="13" VerticalAlignment="Center"/>
-                                            <!-- 缓存图标 -->
+                                            <!-- Cache icon -->
                                             <Border Grid.Column="2" Width="18" Height="18" Background="#000" CornerRadius="9" Margin="4,0" VerticalAlignment="Center"
                                                     IsVisible="{Binding IsCached}">
                                                 <TextBlock Text="✓" FontSize="11" Foreground="#1DB954" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                             </Border>
-                                            <!-- 更新缓存按钮 -->
+                                            <!-- Update cache button -->
                                             <Border Grid.Column="3" Width="22" Height="22" Background="Black" CornerRadius="11" Tapped="OnUpdateCacheButtonTapped" Cursor="Hand" Opacity="0.6" Margin="4,0" VerticalAlignment="Center">
                                                 <TextBlock Text="↻" Foreground="White" FontWeight="Bold" FontSize="11" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                             </Border>
-                                            <!-- 删除按钮 -->
+                                            <!-- Remove button -->
                                             <Border Grid.Column="4" Width="22" Height="22" Background="Black" CornerRadius="11" Tapped="OnRemoveButtonTapped" Cursor="Hand" Opacity="0.6" VerticalAlignment="Center">
                                                 <TextBlock Text="×" Foreground="White" FontWeight="Bold" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                             </Border>
                                         </Grid>
                                     </Border>
-                                    <!-- 未播放时的样式 -->
+                                    <!-- Style when not playing -->
                                     <Border Padding="10,6" 
                                             CornerRadius="4"
                                             Classes="listItem"
@@ -308,12 +321,12 @@
                                             DoubleTapped="OnPlaylistItemDoubleTapped">
                                         <Grid ColumnDefinitions="*, Auto, Auto, Auto" VerticalAlignment="Center">
                                             <TextBlock Grid.Column="0" Text="{Binding Name}" Foreground="#e0e0e0" FontWeight="Medium" FontSize="13" VerticalAlignment="Center"/>
-                                            <!-- 缓存图标 -->
+                                            <!-- Cache icon -->
                                             <Border Grid.Column="1" Width="18" Height="18" Background="#1DB954" CornerRadius="9" Margin="4,0" VerticalAlignment="Center"
                                                     IsVisible="{Binding IsCached}">
                                                 <TextBlock Text="✓" FontSize="11" Foreground="Black" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                             </Border>
-                                            <!-- 更新缓存按钮 -->
+                                            <!-- Update cache button -->
                                             <Border Grid.Column="2" Width="22" Height="22" Background="#404040" CornerRadius="11" Tapped="OnUpdateCacheButtonTapped" Cursor="Hand" Opacity="0.5" Margin="4,0" VerticalAlignment="Center">
                                                 <Border.Styles>
                                                     <Style Selector="Border:pointerover">
@@ -323,7 +336,7 @@
                                                 </Border.Styles>
                                                 <TextBlock Text="↻" Foreground="#e0e0e0" FontWeight="Bold" FontSize="11" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                             </Border>
-                                            <!-- 删除按钮 -->
+                                            <!-- Remove button -->
                                             <Border Grid.Column="3" Width="22" Height="22" Background="#404040" CornerRadius="11" Tapped="OnRemoveButtonTapped" Cursor="Hand" Opacity="0.5" VerticalAlignment="Center">
                                                 <Border.Styles>
                                                     <Style Selector="Border:pointerover">
@@ -346,7 +359,7 @@
     </Grid>
 
     <Window.Styles>
-        <!-- 控制按钮样式 -->
+        <!-- Control button styles -->
         <Style Selector="Button.ctrlBtn">
             <Setter Property="Background" Value="#3a3a3a"/>
             <Setter Property="BorderThickness" Value="0"/>
@@ -358,7 +371,7 @@
             <Setter Property="Background" Value="#4a4a4a"/>
         </Style>
 
-        <!-- 播放按钮样式 -->
+        <!-- Play button styles -->
         <Style Selector="Button.playBtn">
             <Setter Property="Background" Value="#1DB954"/>
             <Setter Property="BorderThickness" Value="0"/>
@@ -370,7 +383,7 @@
             <Setter Property="Background" Value="#22e05b"/>
         </Style>
 
-        <!-- 模式按钮样式 -->
+        <!-- Mode button styles -->
         <Style Selector="Button.modeBtn">
             <Setter Property="Background" Value="#2a2a2a"/>
             <Setter Property="BorderThickness" Value="1"/>
@@ -388,13 +401,13 @@
             <Setter Property="Foreground" Value="Black"/>
         </Style>
 
-        <!-- 音量滑块样式 -->
+        <!-- Volume slider styles -->
         <Style Selector="Slider">
             <Setter Property="Background" Value="#2a2a2a"/>
             <Setter Property="Foreground" Value="#1DB954"/>
         </Style>
 
-        <!-- 搜索框样式 -->
+        <!-- Search box styles -->
         <Style Selector="TextBox">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
@@ -402,7 +415,7 @@
             <Setter Property="CaretBrush" Value="#1DB954"/>
         </Style>
 
-        <!-- 列表项悬停效果 -->
+        <!-- List item hover effect -->
         <Style Selector="Border.listItem">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderBrush" Value="Transparent"/>
@@ -413,7 +426,7 @@
             <Setter Property="BorderBrush" Value="#1DB954"/>
         </Style>
 
-        <!-- 更新按钮样式 -->
+        <!-- Update button styles -->
         <Style Selector="Button.updateBtn">
             <Setter Property="Background" Value="#0a0a0a"/>
             <Setter Property="BorderThickness" Value="0"/>

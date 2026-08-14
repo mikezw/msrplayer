@@ -23,6 +23,7 @@ public partial class MainWindowViewModel : ViewModelBase
     private readonly LyricService _lyricService;
     private readonly CacheService _cacheService;
     private readonly UpdateService _updateService;
+    private readonly ILocalizationService _localizationService;
     private PlayerConfig _config;
     private List<LyricLine> _currentLyrics = new List<LyricLine>();
     private int _currentLyricIndex = -1;
@@ -46,7 +47,7 @@ public partial class MainWindowViewModel : ViewModelBase
     private string _currentSongName = string.Empty;
 
     [ObservableProperty]
-    private string _statusText = "加载中...";
+    private string _statusText = string.Empty;
 
     [ObservableProperty]
     private bool _isPlaying;
@@ -85,7 +86,7 @@ public partial class MainWindowViewModel : ViewModelBase
     private string _updateBannerText = string.Empty;
 
     [ObservableProperty]
-    private string _updateButtonText = "下载更新";
+    private string _updateButtonText = string.Empty;
 
     [ObservableProperty]
     private bool _isUpdating;
@@ -93,16 +94,38 @@ public partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty]
     private double _updateProgress;
 
+    #region Localized UI text properties
+
+    public string SongListTitle => _localizationService["Common_SongList"];
+
+    public string DoubleClickToAddHint => _localizationService["Common_DoubleClickToAdd"];
+
+    public string SearchPlaceholder => _localizationService["Common_SearchPlaceholder"];
+
+    public string NowPlayingTitle => _localizationService["Common_NowPlaying"];
+
+    public string LyricsTitle => _localizationService["Common_Lyrics"];
+
+    public string PlaylistTitle => _localizationService["Common_Playlist"];
+
+    public string PlaylistHint => _localizationService["Common_PlaylistHint"];
+
+    public string LanguageButtonText => _localizationService["Common_LanguageButton"];
+
+    public string SelectCacheDirectoryTitle => _localizationService["Common_SelectCacheDirectory"];
+
+    #endregion
+
     public string LoopModeText
     {
         get
         {
             return CurrentMode switch
             {
-                PlayMode.Sequence => "顺序",
-                PlayMode.LoopOne => "单曲循环",
-                PlayMode.LoopAll => "列表循环",
-                _ => "顺序"
+                PlayMode.Sequence => _localizationService["Player_LoopSequence"],
+                PlayMode.LoopOne => _localizationService["Player_LoopOne"],
+                PlayMode.LoopAll => _localizationService["Player_LoopAll"],
+                _ => _localizationService["Player_LoopSequence"]
             };
         }
     }
@@ -111,7 +134,9 @@ public partial class MainWindowViewModel : ViewModelBase
     {
         get
         {
-            return EnableCache ? "缓存已开启" : "缓存已关闭";
+            return EnableCache
+                ? _localizationService["Player_CacheEnabled"]
+                : _localizationService["Player_CacheDisabled"];
         }
     }
 
@@ -122,7 +147,8 @@ public partial class MainWindowViewModel : ViewModelBase
         ConfigService configService,
         LyricService lyricService,
         CacheService cacheService,
-        UpdateService updateService)
+        UpdateService updateService,
+        ILocalizationService localizationService)
     {
         _apiService = apiService;
         _audioService = audioService;
@@ -131,11 +157,16 @@ public partial class MainWindowViewModel : ViewModelBase
         _lyricService = lyricService;
         _cacheService = cacheService;
         _updateService = updateService;
+        _localizationService = localizationService;
 
         _config = _configService.Load();
         _volume = _config.Volume;
         _currentMode = _config.PlayMode;
         _enableCache = _config.EnableCache;
+
+        _localizationService.LanguageChanged += OnLanguageChanged;
+        _localizationService.ChangeLanguage(_config.Language);
+        RefreshLocalizedTexts();
 
         if (!string.IsNullOrEmpty(_config.CacheDirectory))
         {
@@ -149,6 +180,37 @@ public partial class MainWindowViewModel : ViewModelBase
 
         LoadDataAsync();
         _ = CheckForUpdateAsync(silent: true);
+    }
+
+    private void OnLanguageChanged(object? sender, EventArgs e)
+    {
+        Dispatcher.UIThread.Post(RefreshLocalizedTexts);
+    }
+
+    private void RefreshLocalizedTexts()
+    {
+        OnPropertyChanged(nameof(LoopModeText));
+        OnPropertyChanged(nameof(CacheModeText));
+        OnPropertyChanged(nameof(SongListTitle));
+        OnPropertyChanged(nameof(DoubleClickToAddHint));
+        OnPropertyChanged(nameof(SearchPlaceholder));
+        OnPropertyChanged(nameof(NowPlayingTitle));
+        OnPropertyChanged(nameof(LyricsTitle));
+        OnPropertyChanged(nameof(PlaylistTitle));
+        OnPropertyChanged(nameof(PlaylistHint));
+        OnPropertyChanged(nameof(LanguageButtonText));
+    }
+
+    [RelayCommand]
+    private void ToggleLanguage()
+    {
+        var newLanguage = _config.Language == AppLanguage.English
+            ? AppLanguage.ChineseSimplified
+            : AppLanguage.English;
+
+        _localizationService.ChangeLanguage(newLanguage);
+        _config.Language = newLanguage;
+        _configService.Save(_config);
     }
 
     partial void OnVolumeChanged(double value)
@@ -170,7 +232,9 @@ public partial class MainWindowViewModel : ViewModelBase
         _config.EnableCache = value;
         _configService.Save(_config);
         OnPropertyChanged(nameof(CacheModeText));
-        StatusText = value ? "缓存模式已开启" : "缓存模式已关闭";
+        StatusText = value
+            ? _localizationService["Status_CacheModeEnabled"]
+            : _localizationService["Status_CacheModeDisabled"];
     }
 
     partial void OnSearchTextChanged(string value)
@@ -197,8 +261,8 @@ public partial class MainWindowViewModel : ViewModelBase
         }
 
         StatusText = string.IsNullOrWhiteSpace(SearchText)
-            ? $"共 {_allSongs.Count} 歌曲"
-            : $"搜索结果：{Songs.Count} / {_allSongs.Count} 歌曲";
+            ? _localizationService.Format("Status_TotalSongs", _allSongs.Count)
+            : _localizationService.Format("Status_SearchResult", Songs.Count, _allSongs.Count);
     }
 
     [RelayCommand]
@@ -213,7 +277,7 @@ public partial class MainWindowViewModel : ViewModelBase
         _configService.Save(_config);
         _cacheService.CacheDirectory = path;
         UpdateCacheStatus();
-        StatusText = $"缓存目录已设置为: {path}";
+        StatusText = _localizationService.Format("Status_CacheDirectorySet", path);
     }
 
     private string FormatTime(TimeSpan time)
@@ -285,14 +349,14 @@ public partial class MainWindowViewModel : ViewModelBase
                     Playlist.Add(item);
                 }
                 UpdateCacheStatus();
-                StatusText = $"共 {_allSongs.Count} 歌曲，播放列表 {Playlist.Count} 首";
+                StatusText = _localizationService.Format("Status_TotalSongsWithPlaylist", _allSongs.Count, Playlist.Count);
             });
         }
         catch (Exception ex)
         {
             await Dispatcher.UIThread.InvokeAsync(() =>
             {
-                StatusText = $"加载失败: {ex.Message}";
+                StatusText = _localizationService.Format("Status_LoadFailed", ex.Message);
             });
         }
     }
@@ -334,14 +398,16 @@ public partial class MainWindowViewModel : ViewModelBase
         {
             Cid = song.Cid,
             Name = song.Name,
-            Artist = song.ArtistDisplay,
+            Artist = string.IsNullOrEmpty(song.ArtistDisplay)
+                ? _localizationService["Common_UnknownArtist"]
+                : song.ArtistDisplay,
             IsPlaying = false,
             IsCached = false
         };
 
         Playlist.Add(newItem);
         SavePlaylist();
-        StatusText = $"已添加 {song.Name}，播放列表 {Playlist.Count} 首";
+        StatusText = _localizationService.Format("Status_AddedToPlaylist", song.Name, Playlist.Count);
     }
 
     private async Task<SongDetail?> GetSongDetailWithCache(string cid)
@@ -398,7 +464,7 @@ public partial class MainWindowViewModel : ViewModelBase
         {
             CurrentIndex = index;
             CurrentSongName = songName;
-            StatusText = $"正在获取 {songName}...";
+            StatusText = _localizationService.Format("Status_FetchingSong", songName);
             UpdatePlayingIndicator(index);
             CurrentPosition = 0;
             CurrentTimeText = "00:00";
@@ -418,7 +484,7 @@ public partial class MainWindowViewModel : ViewModelBase
             {
                 await Dispatcher.UIThread.InvokeAsync(() =>
                 {
-                    StatusText = "无法获取播放地址";
+                    StatusText = _localizationService["Status_NoPlaybackUrl"];
                 });
                 return;
             }
@@ -463,7 +529,7 @@ public partial class MainWindowViewModel : ViewModelBase
                 await Dispatcher.UIThread.InvokeAsync(() =>
                 {
                     item.IsCached = true;
-                    StatusText = $"正在播放: {songName} (缓存)";
+                    StatusText = _localizationService.Format("Status_PlayingCached", songName);
                 });
             }
             else
@@ -471,7 +537,9 @@ public partial class MainWindowViewModel : ViewModelBase
                 playUrl = detail.SourceUrl;
                 await Dispatcher.UIThread.InvokeAsync(() =>
                 {
-                    StatusText = EnableCache ? $"正在播放: {songName} (边下载边播放)" : $"正在播放: {songName}";
+                    StatusText = EnableCache
+                        ? _localizationService.Format("Status_PlayingStreamAndCache", songName)
+                        : _localizationService.Format("Status_PlayingStreaming", songName);
                 });
 
                 if (EnableCache)
@@ -499,7 +567,7 @@ public partial class MainWindowViewModel : ViewModelBase
         {
             await Dispatcher.UIThread.InvokeAsync(() =>
             {
-                StatusText = $"播放失败: {ex.Message}";
+                StatusText = _localizationService.Format("Status_PlayFailed", ex.Message);
             });
         }
     }
@@ -552,7 +620,7 @@ public partial class MainWindowViewModel : ViewModelBase
         }
 
         SavePlaylist();
-        StatusText = $"播放列表 {Playlist.Count} 首";
+        StatusText = _localizationService.Format("Status_PlaylistCount", Playlist.Count);
     }
 
     [RelayCommand]
@@ -565,7 +633,7 @@ public partial class MainWindowViewModel : ViewModelBase
 
         await Dispatcher.UIThread.InvokeAsync(() =>
         {
-            StatusText = $"正在更新缓存: {item.Name}...";
+            StatusText = _localizationService.Format("Status_UpdatingCache", item.Name);
         });
 
         try
@@ -576,7 +644,7 @@ public partial class MainWindowViewModel : ViewModelBase
             {
                 await Dispatcher.UIThread.InvokeAsync(() =>
                 {
-                    StatusText = "无法获取播放地址";
+                    StatusText = _localizationService["Status_NoPlaybackUrl"];
                 });
                 return;
             }
@@ -603,14 +671,14 @@ public partial class MainWindowViewModel : ViewModelBase
             await Dispatcher.UIThread.InvokeAsync(() =>
             {
                 item.IsCached = true;
-                StatusText = $"缓存已更新: {item.Name}";
+                StatusText = _localizationService.Format("Status_CacheUpdated", item.Name);
             });
         }
         catch (Exception ex)
         {
             await Dispatcher.UIThread.InvokeAsync(() =>
             {
-                StatusText = $"更新缓存失败: {ex.Message}";
+                StatusText = _localizationService.Format("Status_CacheUpdateFailed", ex.Message);
             });
         }
     }
@@ -692,7 +760,7 @@ public partial class MainWindowViewModel : ViewModelBase
             PlayMode.LoopAll => PlayMode.Sequence,
             _ => PlayMode.Sequence
         };
-        StatusText = $"播放模式: {LoopModeText}";
+        StatusText = _localizationService.Format("Status_PlayMode", LoopModeText);
     }
 
     private void SavePlaylist()
@@ -732,7 +800,7 @@ public partial class MainWindowViewModel : ViewModelBase
                 CurrentPosition = 0;
                 CurrentTimeText = "00:00";
                 TotalTimeText = "00:00";
-                StatusText = "播放完成";
+                StatusText = _localizationService["Status_PlaybackComplete"];
             });
         }
     }
@@ -749,7 +817,7 @@ public partial class MainWindowViewModel : ViewModelBase
     {
         if (!silent)
         {
-            UpdateBannerText = "正在检查更新...";
+            UpdateBannerText = _localizationService["Update_Checking"];
             IsUpdateVisible = true;
         }
 
@@ -762,7 +830,7 @@ public partial class MainWindowViewModel : ViewModelBase
                 IsUpdateVisible = false;
                 if (!silent)
                 {
-                    StatusText = "已是最新版本";
+                    StatusText = _localizationService["Update_UpToDate"];
                 }
                 return;
             }
@@ -774,27 +842,27 @@ public partial class MainWindowViewModel : ViewModelBase
                 IsUpdateVisible = false;
                 if (!silent)
                 {
-                    StatusText = "已是最新版本";
+                    StatusText = _localizationService["Update_UpToDate"];
                 }
                 return;
             }
 
             _updateInfo = info;
-            UpdateBannerText = $"发现新版本 v{latestVersion}";
-            UpdateButtonText = "下载更新";
+            UpdateBannerText = _localizationService.Format("Update_NewVersionFound", latestVersion);
+            UpdateButtonText = _localizationService["Update_DownloadButton"];
             IsUpdateVisible = true;
             if (!silent)
             {
-                StatusText = $"发现新版本 v{latestVersion}，点击下载更新";
+                StatusText = _localizationService.Format("Update_FoundClickToDownload", latestVersion);
             }
         }
         catch (NotInstalledException)
         {
-            // 非安装版（直接运行 bin/发布目录等）：无 Velopack 安装记录，无法检查更新
+            // Non-installed build (running from bin/publish directory without Velopack install records): cannot check for updates
             IsUpdateVisible = false;
             if (!silent)
             {
-                StatusText = "当前为非安装版本，无法检查更新（请使用安装版）";
+                StatusText = _localizationService["Update_NotInstalled"];
             }
         }
         catch (Exception ex)
@@ -802,7 +870,7 @@ public partial class MainWindowViewModel : ViewModelBase
             IsUpdateVisible = false;
             if (!silent)
             {
-                StatusText = $"检查更新失败: {ex.Message}";
+                StatusText = _localizationService.Format("Update_CheckFailed", ex.Message);
             }
         }
     }
@@ -823,8 +891,8 @@ public partial class MainWindowViewModel : ViewModelBase
 
         IsUpdating = true;
         UpdateProgress = 0;
-        UpdateBannerText = "正在下载更新...";
-        UpdateButtonText = "下载中...";
+        UpdateBannerText = _localizationService["Update_Downloading"];
+        UpdateButtonText = _localizationService["Update_DownloadingShort"];
 
         try
         {
@@ -833,15 +901,15 @@ public partial class MainWindowViewModel : ViewModelBase
                 Dispatcher.UIThread.Post(() => UpdateProgress = progress);
             });
 
-            UpdateBannerText = "下载完成，正在重启以应用更新...";
+            UpdateBannerText = _localizationService["Update_DownloadComplete"];
             await Task.Delay(500);
             _updateService.ApplyUpdatesAndRestart(_updateInfo);
         }
         catch (Exception ex)
         {
             IsUpdating = false;
-            UpdateButtonText = "重试";
-            UpdateBannerText = $"更新失败: {ex.Message}";
+            UpdateButtonText = _localizationService["Update_Retry"];
+            UpdateBannerText = _localizationService.Format("Update_Failed", ex.Message);
         }
     }
 }

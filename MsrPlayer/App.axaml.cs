@@ -22,6 +22,9 @@ public partial class App : Application
     private WindowIcon? _appIcon;
     private IServiceProvider? _services;
     private CancellationTokenSource? _singleInstanceCts;
+    private NativeMenuItem? _showItem;
+    private NativeMenuItem? _updateItem;
+    private NativeMenuItem? _exitItem;
 
     public override void Initialize()
     {
@@ -40,6 +43,7 @@ public partial class App : Application
         services.AddSingleton<LyricService>();
         services.AddSingleton<CacheService>();
         services.AddSingleton<UpdateService>();
+        services.AddSingleton<ILocalizationService, LocalizationService>();
         services.AddSingleton<MainWindowViewModel>();
         _services = services.BuildServiceProvider();
     }
@@ -77,7 +81,7 @@ public partial class App : Application
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"图标加载失败: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"Icon load failed: {ex.Message}");
         }
     }
 
@@ -88,17 +92,17 @@ public partial class App : Application
             if (_appIcon != null)
             {
                 var menu = new NativeMenu();
-                var showItem = new NativeMenuItem { Header = "显示窗口" };
-                showItem.Click += (_, _) => ShowWindow();
-                menu.Items.Add(showItem);
+                _showItem = new NativeMenuItem { Header = "Show Window" };
+                _showItem.Click += (_, _) => ShowWindow();
+                menu.Items.Add(_showItem);
 
-                var updateItem = new NativeMenuItem { Header = "检查更新" };
-                updateItem.Click += (_, _) => _services!.GetRequiredService<MainWindowViewModel>().CheckForUpdateCommand.Execute(null);
-                menu.Items.Add(updateItem);
+                _updateItem = new NativeMenuItem { Header = "Check for Updates" };
+                _updateItem.Click += (_, _) => _services!.GetRequiredService<MainWindowViewModel>().CheckForUpdateCommand.Execute(null);
+                menu.Items.Add(_updateItem);
 
-                var exitItem = new NativeMenuItem { Header = "退出" };
-                exitItem.Click += (_, _) => ExitApp();
-                menu.Items.Add(exitItem);
+                _exitItem = new NativeMenuItem { Header = "Exit" };
+                _exitItem.Click += (_, _) => ExitApp();
+                menu.Items.Add(_exitItem);
 
                 _trayIcon = new TrayIcon
                 {
@@ -108,11 +112,39 @@ public partial class App : Application
                 };
 
                 _trayIcon.Clicked += (_, _) => ShowWindow();
+
+                var localizationService = _services!.GetRequiredService<ILocalizationService>();
+                localizationService.LanguageChanged += (_, _) => UpdateTrayMenuTexts();
+                UpdateTrayMenuTexts();
             }
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"托盘图标创建失败: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"Tray icon creation failed: {ex.Message}");
+        }
+    }
+
+    private void UpdateTrayMenuTexts()
+    {
+        var loc = _services?.GetService<ILocalizationService>();
+        if (loc == null)
+        {
+            return;
+        }
+
+        if (_showItem != null)
+        {
+            _showItem.Header = loc["Common_ShowWindow"];
+        }
+
+        if (_updateItem != null)
+        {
+            _updateItem.Header = loc["Common_CheckForUpdates"];
+        }
+
+        if (_exitItem != null)
+        {
+            _exitItem.Header = loc["Common_Exit"];
         }
     }
 

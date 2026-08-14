@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+
+  <!-- Common UI -->
+  <data name="Common_SongList" xml:space="preserve">
+    <value>歌曲列表</value>
+  </data>
+  <data name="Common_DoubleClickToAdd" xml:space="preserve">
+    <value>双击添加到播放列表</value>
+  </data>
+  <data name="Common_SearchPlaceholder" xml:space="preserve">
+    <value>搜索歌曲...</value>
+  </data>
+  <data name="Common_NowPlaying" xml:space="preserve">
+    <value>正在播放</value>
+  </data>
+  <data name="Common_Lyrics" xml:space="preserve">
+    <value>歌词</value>
+  </data>
+  <data name="Common_Playlist" xml:space="preserve">
+    <value>播放列表</value>
+  </data>
+  <data name="Common_PlaylistHint" xml:space="preserve">
+    <value>双击播放 · × 移除 · ↻ 更新缓存</value>
+  </data>
+  <data name="Common_ShowWindow" xml:space="preserve">
+    <value>显示窗口</value>
+  </data>
+  <data name="Common_CheckForUpdates" xml:space="preserve">
+    <value>检查更新</value>
+  </data>
+  <data name="Common_Exit" xml:space="preserve">
+    <value>退出</value>
+  </data>
+  <data name="Common_SelectCacheDirectory" xml:space="preserve">
+    <value>选择缓存目录</value>
+  </data>
+  <data name="Common_UnknownArtist" xml:space="preserve">
+    <value>未知艺术家</value>
+  </data>
+  <data name="Common_LanguageButton" xml:space="preserve">
+    <value>🌐 English</value>
+  </data>
+
+  <!-- Player modes -->
+  <data name="Player_LoopSequence" xml:space="preserve">
+    <value>顺序</value>
+  </data>
+  <data name="Player_LoopOne" xml:space="preserve">
+    <value>单曲循环</value>
+  </data>
+  <data name="Player_LoopAll" xml:space="preserve">
+    <value>列表循环</value>
+  </data>
+  <data name="Player_CacheEnabled" xml:space="preserve">
+    <value>缓存已开启</value>
+  </data>
+  <data name="Player_CacheDisabled" xml:space="preserve">
+    <value>缓存已关闭</value>
+  </data>
+
+  <!-- Status messages -->
+  <data name="Status_Loading" xml:space="preserve">
+    <value>加载中...</value>
+  </data>
+  <data name="Status_TotalSongs" xml:space="preserve">
+    <value>共 {0} 歌曲</value>
+  </data>
+  <data name="Status_SearchResult" xml:space="preserve">
+    <value>搜索结果：{0} / {1} 歌曲</value>
+  </data>
+  <data name="Status_CacheDirectorySet" xml:space="preserve">
+    <value>缓存目录已设置为: {0}</value>
+  </data>
+  <data name="Status_TotalSongsWithPlaylist" xml:space="preserve">
+    <value>共 {0} 歌曲，播放列表 {1} 首</value>
+  </data>
+  <data name="Status_LoadFailed" xml:space="preserve">
+    <value>加载失败: {0}</value>
+  </data>
+  <data name="Status_AddedToPlaylist" xml:space="preserve">
+    <value>已添加 {0}，播放列表 {1} 首</value>
+  </data>
+  <data name="Status_FetchingSong" xml:space="preserve">
+    <value>正在获取 {0}...</value>
+  </data>
+  <data name="Status_NoPlaybackUrl" xml:space="preserve">
+    <value>无法获取播放地址</value>
+  </data>
+  <data name="Status_PlayingCached" xml:space="preserve">
+    <value>正在播放: {0} (缓存)</value>
+  </data>
+  <data name="Status_PlayingStreaming" xml:space="preserve">
+    <value>正在播放: {0}</value>
+  </data>
+  <data name="Status_PlayingStreamAndCache" xml:space="preserve">
+    <value>正在播放: {0} (边下载边播放)</value>
+  </data>
+  <data name="Status_PlayFailed" xml:space="preserve">
+    <value>播放失败: {0}</value>
+  </data>
+  <data name="Status_PlaylistCount" xml:space="preserve">
+    <value>播放列表 {0} 首</value>
+  </data>
+  <data name="Status_UpdatingCache" xml:space="preserve">
+    <value>正在更新缓存: {0}...</value>
+  </data>
+  <data name="Status_CacheUpdated" xml:space="preserve">
+    <value>缓存已更新: {0}</value>
+  </data>
+  <data name="Status_CacheUpdateFailed" xml:space="preserve">
+    <value>更新缓存失败: {0}</value>
+  </data>
+  <data name="Status_PlayMode" xml:space="preserve">
+    <value>播放模式: {0}</value>
+  </data>
+  <data name="Status_PlaybackComplete" xml:space="preserve">
+    <value>播放完成</value>
+  </data>
+  <data name="Status_CacheModeEnabled" xml:space="preserve">
+    <value>缓存模式已开启</value>
+  </data>
+  <data name="Status_CacheModeDisabled" xml:space="preserve">
+    <value>缓存模式已关闭</value>
+  </data>
+
+  <!-- Update messages -->
+  <data name="Update_Checking" xml:space="preserve">
+    <value>正在检查更新...</value>
+  </data>
+  <data name="Update_UpToDate" xml:space="preserve">
+    <value>已是最新版本</value>
+  </data>
+  <data name="Update_NewVersionFound" xml:space="preserve">
+    <value>发现新版本 v{0}</value>
+  </data>
+  <data name="Update_DownloadButton" xml:space="preserve">
+    <value>下载更新</value>
+  </data>
+  <data name="Update_FoundClickToDownload" xml:space="preserve">
+    <value>发现新版本 v{0}，点击下载更新</value>
+  </data>
+  <data name="Update_NotInstalled" xml:space="preserve">
+    <value>当前为非安装版本，无法检查更新（请使用安装版）</value>
+  </data>
+  <data name="Update_CheckFailed" xml:space="preserve">
+    <value>检查更新失败: {0}</value>
+  </data>
+  <data name="Update_Downloading" xml:space="preserve">
+    <value>正在下载更新...</value>
+  </data>
+  <data name="Update_DownloadingShort" xml:space="preserve">
+    <value>下载中...</value>
+  </data>
+  <data name="Update_DownloadComplete" xml:space="preserve">
+    <value>下载完成，正在重启以应用更新...</value>
+  </data>
+  <data name="Update_Retry" xml:space="preserve">
+    <value>重试</value>
+  </data>
+  <data name="Update_Failed" xml:space="preserve">
+    <value>更新失败: {0}</value>
+  </data>
+</root>

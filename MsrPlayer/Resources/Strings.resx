@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+
+  <!-- Common UI -->
+  <data name="Common_SongList" xml:space="preserve">
+    <value>Song List</value>
+  </data>
+  <data name="Common_DoubleClickToAdd" xml:space="preserve">
+    <value>Double-click to add to playlist</value>
+  </data>
+  <data name="Common_SearchPlaceholder" xml:space="preserve">
+    <value>Search songs...</value>
+  </data>
+  <data name="Common_NowPlaying" xml:space="preserve">
+    <value>Now Playing</value>
+  </data>
+  <data name="Common_Lyrics" xml:space="preserve">
+    <value>Lyrics</value>
+  </data>
+  <data name="Common_Playlist" xml:space="preserve">
+    <value>Playlist</value>
+  </data>
+  <data name="Common_PlaylistHint" xml:space="preserve">
+    <value>Double-click to play · × Remove · ↻ Update cache</value>
+  </data>
+  <data name="Common_ShowWindow" xml:space="preserve">
+    <value>Show Window</value>
+  </data>
+  <data name="Common_CheckForUpdates" xml:space="preserve">
+    <value>Check for Updates</value>
+  </data>
+  <data name="Common_Exit" xml:space="preserve">
+    <value>Exit</value>
+  </data>
+  <data name="Common_SelectCacheDirectory" xml:space="preserve">
+    <value>Select Cache Directory</value>
+  </data>
+  <data name="Common_UnknownArtist" xml:space="preserve">
+    <value>Unknown Artist</value>
+  </data>
+  <data name="Common_LanguageButton" xml:space="preserve">
+    <value>🌐 中文</value>
+  </data>
+
+  <!-- Player modes -->
+  <data name="Player_LoopSequence" xml:space="preserve">
+    <value>Sequential</value>
+  </data>
+  <data name="Player_LoopOne" xml:space="preserve">
+    <value>Loop One</value>
+  </data>
+  <data name="Player_LoopAll" xml:space="preserve">
+    <value>Loop All</value>
+  </data>
+  <data name="Player_CacheEnabled" xml:space="preserve">
+    <value>Cache On</value>
+  </data>
+  <data name="Player_CacheDisabled" xml:space="preserve">
+    <value>Cache Off</value>
+  </data>
+
+  <!-- Status messages -->
+  <data name="Status_Loading" xml:space="preserve">
+    <value>Loading...</value>
+  </data>
+  <data name="Status_TotalSongs" xml:space="preserve">
+    <value>{0} songs</value>
+  </data>
+  <data name="Status_SearchResult" xml:space="preserve">
+    <value>Search results: {0} / {1} songs</value>
+  </data>
+  <data name="Status_CacheDirectorySet" xml:space="preserve">
+    <value>Cache directory set to: {0}</value>
+  </data>
+  <data name="Status_TotalSongsWithPlaylist" xml:space="preserve">
+    <value>{0} songs, {1} in playlist</value>
+  </data>
+  <data name="Status_LoadFailed" xml:space="preserve">
+    <value>Load failed: {0}</value>
+  </data>
+  <data name="Status_AddedToPlaylist" xml:space="preserve">
+    <value>Added {0}, playlist has {1} songs</value>
+  </data>
+  <data name="Status_FetchingSong" xml:space="preserve">
+    <value>Fetching {0}...</value>
+  </data>
+  <data name="Status_NoPlaybackUrl" xml:space="preserve">
+    <value>Unable to get playback URL</value>
+  </data>
+  <data name="Status_PlayingCached" xml:space="preserve">
+    <value>Now playing: {0} (cached)</value>
+  </data>
+  <data name="Status_PlayingStreaming" xml:space="preserve">
+    <value>Now playing: {0}</value>
+  </data>
+  <data name="Status_PlayingStreamAndCache" xml:space="preserve">
+    <value>Now playing: {0} (stream and cache)</value>
+  </data>
+  <data name="Status_PlayFailed" xml:space="preserve">
+    <value>Playback failed: {0}</value>
+  </data>
+  <data name="Status_PlaylistCount" xml:space="preserve">
+    <value>Playlist has {0} songs</value>
+  </data>
+  <data name="Status_UpdatingCache" xml:space="preserve">
+    <value>Updating cache: {0}...</value>
+  </data>
+  <data name="Status_CacheUpdated" xml:space="preserve">
+    <value>Cache updated: {0}</value>
+  </data>
+  <data name="Status_CacheUpdateFailed" xml:space="preserve">
+    <value>Cache update failed: {0}</value>
+  </data>
+  <data name="Status_PlayMode" xml:space="preserve">
+    <value>Play mode: {0}</value>
+  </data>
+  <data name="Status_PlaybackComplete" xml:space="preserve">
+    <value>Playback finished</value>
+  </data>
+  <data name="Status_CacheModeEnabled" xml:space="preserve">
+    <value>Cache mode enabled</value>
+  </data>
+  <data name="Status_CacheModeDisabled" xml:space="preserve">
+    <value>Cache mode disabled</value>
+  </data>
+
+  <!-- Update messages -->
+  <data name="Update_Checking" xml:space="preserve">
+    <value>Checking for updates...</value>
+  </data>
+  <data name="Update_UpToDate" xml:space="preserve">
+    <value>Already up to date</value>
+  </data>
+  <data name="Update_NewVersionFound" xml:space="preserve">
+    <value>New version v{0} found</value>
+  </data>
+  <data name="Update_DownloadButton" xml:space="preserve">
+    <value>Download Update</value>
+  </data>
+  <data name="Update_FoundClickToDownload" xml:space="preserve">
+    <value>New version v{0} found, click to download</value>
+  </data>
+  <data name="Update_NotInstalled" xml:space="preserve">
+    <value>Running non-installed version, cannot check for updates (please use the installed version)</value>
+  </data>
+  <data name="Update_CheckFailed" xml:space="preserve">
+    <value>Update check failed: {0}</value>
+  </data>
+  <data name="Update_Downloading" xml:space="preserve">
+    <value>Downloading update...</value>
+  </data>
+  <data name="Update_DownloadingShort" xml:space="preserve">
+    <value>Downloading...</value>
+  </data>
+  <data name="Update_DownloadComplete" xml:space="preserve">
+    <value>Download complete, restarting to apply update...</value>
+  </data>
+  <data name="Update_Retry" xml:space="preserve">
+    <value>Retry</value>
+  </data>
+  <data name="Update_Failed" xml:space="preserve">
+    <value>Update failed: {0}</value>
+  </data>
+</root>
