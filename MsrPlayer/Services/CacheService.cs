@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Text.Json;
@@ -37,6 +38,11 @@ public class CacheService
     private string LyricCachePath
     {
         get { return Path.Combine(CacheDirectory, "lyrics"); }
+    }
+
+    private string SongListCachePath
+    {
+        get { return Path.Combine(CacheDirectory, "songlist.json"); }
     }
 
     public CacheService()
@@ -261,6 +267,41 @@ public class CacheService
             {
                 File.Delete(file);
             }
+        }
+    }
+
+    public void SaveSongListCache(List<Song> songs)
+    {
+        if (songs == null)
+        {
+            return;
+        }
+
+        try
+        {
+            var json = JsonSerializer.Serialize(songs, _jsonOptions);
+            File.WriteAllText(SongListCachePath, json);
+        }
+        catch
+        {
+        }
+    }
+
+    public List<Song>? GetSongListCache()
+    {
+        if (!File.Exists(SongListCachePath))
+        {
+            return null;
+        }
+
+        try
+        {
+            var json = File.ReadAllText(SongListCachePath);
+            return JsonSerializer.Deserialize<List<Song>>(json);
+        }
+        catch
+        {
+            return null;
         }
     }
 }

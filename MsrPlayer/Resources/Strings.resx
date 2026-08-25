@@ -75,6 +75,15 @@
   <data name="Status_Loading" xml:space="preserve">
     <value>Loading...</value>
   </data>
+  <data name="Status_LoadingCachedList" xml:space="preserve">
+    <value>Loading cached song list...</value>
+  </data>
+  <data name="Status_ListUpdated" xml:space="preserve">
+    <value>Song list updated: {0} new, {1} removed</value>
+  </data>
+  <data name="Status_RefreshFailed" xml:space="preserve">
+    <value>Song list refresh failed: {0}</value>
+  </data>
   <data name="Status_TotalSongs" xml:space="preserve">
     <value>{0} songs</value>
   </data>

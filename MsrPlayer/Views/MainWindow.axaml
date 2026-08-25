@@ -98,10 +98,34 @@
 
                                         <!-- Song info -->
                                         <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
-                                            <TextBlock Text="{Binding Name}"
-                                                       Foreground="#e0e0e0"
-                                                       FontWeight="Medium"
-                                                       FontSize="13"/>
+                                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                                <TextBlock Text="{Binding Name}"
+                                                           Foreground="#e0e0e0"
+                                                           FontWeight="Medium"
+                                                           FontSize="13"
+                                                           IsVisible="{Binding !IsRemoved}"/>
+                                                <TextBlock Text="{Binding Name}"
+                                                           Foreground="#808080"
+                                                           FontWeight="Medium"
+                                                           FontSize="13"
+                                                           IsVisible="{Binding IsRemoved}"/>
+                                                <!-- NEW badge -->
+                                                <Border Background="#1DB954"
+                                                        CornerRadius="3"
+                                                        Padding="5,1"
+                                                        VerticalAlignment="Center"
+                                                        IsVisible="{Binding IsNew}">
+                                                    <TextBlock Text="NEW" FontSize="9" FontWeight="Bold" Foreground="Black"/>
+                                                </Border>
+                                                <!-- REMOVED badge -->
+                                                <Border Background="#555555"
+                                                        CornerRadius="3"
+                                                        Padding="5,1"
+                                                        VerticalAlignment="Center"
+                                                        IsVisible="{Binding IsRemoved}">
+                                                    <TextBlock Text="REMOVED" FontSize="9" FontWeight="Bold" Foreground="#e0e0e0"/>
+                                                </Border>
+                                            </StackPanel>
                                             <TextBlock Text="{Binding ArtistDisplay}"
                                                        Foreground="#808080"
                                                        FontSize="11"/>
