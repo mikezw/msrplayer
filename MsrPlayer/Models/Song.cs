@@ -49,6 +49,13 @@ public class Song
     [JsonIgnore]
     public bool IsRemoved => Status == SongStatus.Removed;
 
+    /// <summary>
+    /// True when the song was removed from the store and no playable
+    /// audio cache exists, so it must not be added to the playlist.
+    /// </summary>
+    [JsonIgnore]
+    public bool IsUnavailable { get; set; }
+
     public string ArtistDisplay
     {
         get { return Artists is { Count: > 0 } ? string.Join(", ", Artists) : string.Empty; }

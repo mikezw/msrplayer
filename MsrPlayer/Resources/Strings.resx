@@ -108,6 +108,9 @@
   <data name="Status_NoPlaybackUrl" xml:space="preserve">
     <value>Unable to get playback URL</value>
   </data>
+  <data name="Status_SongUnavailable" xml:space="preserve">
+    <value>This song has been removed and has no local cache, cannot add</value>
+  </data>
   <data name="Status_PlayingCached" xml:space="preserve">
     <value>Now playing: {0} (cached)</value>
   </data>
