@@ -108,6 +108,9 @@
   <data name="Status_NoPlaybackUrl" xml:space="preserve">
     <value>无法获取播放地址</value>
   </data>
+  <data name="Status_SongUnavailable" xml:space="preserve">
+    <value>该歌曲已下架且无本地缓存，无法添加</value>
+  </data>
   <data name="Status_PlayingCached" xml:space="preserve">
     <value>正在播放: {0} (缓存)</value>
   </data>

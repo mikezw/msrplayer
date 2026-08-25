@@ -402,10 +402,16 @@ public partial class MainWindowViewModel : ViewModelBase
                     }
                 }
 
-                // Keep songs that disappeared from the latest list and mark them as removed
+                // Keep songs that disappeared from the latest list and mark them as removed.
+                // Songs without playable cache are flagged as unavailable and cannot be added.
                 var removedSongs = _allSongs
                     .Where(s => !latestCids.Contains(s.Cid))
-                    .Select(s => { s.Status = SongStatus.Removed; return s; })
+                    .Select(s =>
+                    {
+                        s.Status = SongStatus.Removed;
+                        s.IsUnavailable = !HasPlayableCache(s.Cid);
+                        return s;
+                    })
                     .ToList();
                 removedCount = removedSongs.Count;
 
@@ -455,11 +461,35 @@ public partial class MainWindowViewModel : ViewModelBase
         }
     }
 
+    /// <summary>
+    /// Returns true when a song has both a cached detail (with playback URL)
+    /// and cached audio, so it remains playable even if removed from the store.
+    /// </summary>
+    private bool HasPlayableCache(string cid)
+    {
+        if (!_cacheService.HasSongDetailCache(cid))
+        {
+            return false;
+        }
+
+        var detail = _cacheService.GetSongDetailCache(cid);
+        return detail != null
+            && !string.IsNullOrEmpty(detail.SourceUrl)
+            && _cacheService.HasAudioCache(cid, detail.SourceUrl);
+    }
+
     [RelayCommand]
     private void AddToPlaylist(Song? song)
     {
         if (song == null)
         {
+            return;
+        }
+
+        // Removed songs without playable cache cannot be added
+        if (song.IsUnavailable)
+        {
+            StatusText = _localizationService["Status_SongUnavailable"];
             return;
         }
 
