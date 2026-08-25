@@ -15,6 +15,17 @@ public class SongListData
     public List<Song> List { get; set; } = new List<Song>();
 }
 
+/// <summary>
+/// Runtime status of a song relative to the cached list,
+/// used to highlight newly added or removed songs after a background refresh.
+/// </summary>
+public enum SongStatus
+{
+    Normal,
+    New,
+    Removed
+}
+
 public class Song
 {
     [JsonPropertyName("cid")]
@@ -25,6 +36,18 @@ public class Song
 
     [JsonPropertyName("artists")]
     public List<string> Artists { get; set; } = new List<string>();
+
+    /// <summary>
+    /// Runtime diff marker; not persisted in the song list cache.
+    /// </summary>
+    [JsonIgnore]
+    public SongStatus Status { get; set; } = SongStatus.Normal;
+
+    [JsonIgnore]
+    public bool IsNew => Status == SongStatus.New;
+
+    [JsonIgnore]
+    public bool IsRemoved => Status == SongStatus.Removed;
 
     public string ArtistDisplay
     {

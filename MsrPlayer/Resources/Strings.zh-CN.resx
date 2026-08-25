@@ -75,6 +75,15 @@
   <data name="Status_Loading" xml:space="preserve">
     <value>加载中...</value>
   </data>
+  <data name="Status_LoadingCachedList" xml:space="preserve">
+    <value>正在加载缓存列表...</value>
+  </data>
+  <data name="Status_ListUpdated" xml:space="preserve">
+    <value>歌曲列表已更新: {0} 首新歌, {1} 首已移除</value>
+  </data>
+  <data name="Status_RefreshFailed" xml:space="preserve">
+    <value>歌曲列表刷新失败: {0}</value>
+  </data>
   <data name="Status_TotalSongs" xml:space="preserve">
     <value>共 {0} 歌曲</value>
   </data>

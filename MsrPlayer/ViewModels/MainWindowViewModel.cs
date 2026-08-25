@@ -333,13 +333,19 @@ public partial class MainWindowViewModel : ViewModelBase
     {
         try
         {
-            var songs = await _apiService.GetSongsAsync();
-            await Dispatcher.UIThread.InvokeAsync(() =>
+            // Step 1: Show the cached song list immediately for fast startup
+            var cachedSongs = _cacheService.GetSongListCache();
+            if (cachedSongs is { Count: > 0 })
             {
-                _allSongs = songs;
-                FilterSongs();
-            });
+                await Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    _allSongs = cachedSongs;
+                    FilterSongs();
+                    StatusText = _localizationService["Status_LoadingCachedList"];
+                });
+            }
 
+            // Step 2: Load the saved playlist from local storage
             var savedPlaylist = _playlistService.Load();
             await Dispatcher.UIThread.InvokeAsync(() =>
             {
@@ -349,14 +355,82 @@ public partial class MainWindowViewModel : ViewModelBase
                     Playlist.Add(item);
                 }
                 UpdateCacheStatus();
-                StatusText = _localizationService.Format("Status_TotalSongsWithPlaylist", _allSongs.Count, Playlist.Count);
             });
+
+            // Step 3: Fetch the latest song list in the background and diff it
+            await RefreshSongListAsync();
         }
         catch (Exception ex)
         {
             await Dispatcher.UIThread.InvokeAsync(() =>
             {
                 StatusText = _localizationService.Format("Status_LoadFailed", ex.Message);
+            });
+        }
+    }
+
+    /// <summary>
+    /// Fetches the latest song list from the API, caches it, and marks
+    /// newly added songs and songs removed from the store.
+    /// </summary>
+    private async Task RefreshSongListAsync()
+    {
+        try
+        {
+            var latestSongs = await _apiService.GetSongsAsync();
+            if (latestSongs.Count == 0)
+            {
+                return;
+            }
+
+            var hasExistingList = _allSongs.Count > 0;
+            var latestCids = new HashSet<string>(latestSongs.Select(s => s.Cid));
+            int newCount = 0;
+            int removedCount = 0;
+
+            if (hasExistingList)
+            {
+                var cachedCids = new HashSet<string>(_allSongs.Select(s => s.Cid));
+
+                // Mark songs that are not in the cached list as new
+                foreach (var song in latestSongs)
+                {
+                    if (!cachedCids.Contains(song.Cid))
+                    {
+                        song.Status = SongStatus.New;
+                        newCount++;
+                    }
+                }
+
+                // Keep songs that disappeared from the latest list and mark them as removed
+                var removedSongs = _allSongs
+                    .Where(s => !latestCids.Contains(s.Cid))
+                    .Select(s => { s.Status = SongStatus.Removed; return s; })
+                    .ToList();
+                removedCount = removedSongs.Count;
+
+                latestSongs.AddRange(removedSongs);
+            }
+
+            // Cache only the clean latest list so removed songs do not reappear on next startup
+            _cacheService.SaveSongListCache(latestSongs.Where(s => s.Status != SongStatus.Removed).ToList());
+
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                _allSongs = latestSongs;
+                FilterSongs();
+
+                StatusText = hasExistingList && (newCount > 0 || removedCount > 0)
+                    ? _localizationService.Format("Status_ListUpdated", newCount, removedCount)
+                    : _localizationService.Format("Status_TotalSongsWithPlaylist", _allSongs.Count, Playlist.Count);
+            });
+        }
+        catch (Exception ex)
+        {
+            // A failed background refresh should not break the cached list already shown
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                StatusText = _localizationService.Format("Status_RefreshFailed", ex.Message);
             });
         }
     }
