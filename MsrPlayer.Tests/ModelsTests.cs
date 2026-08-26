@@ -42,7 +42,7 @@ public class ModelsTests
     }
 
     [Fact]
-    public void Song_ArtistDisplay_WithNoArtists_ReturnsUnknownArtist()
+    public void Song_ArtistDisplay_WithNoArtists_ReturnsEmptyString()
     {
         // Arrange
         var song = new Song
@@ -56,11 +56,11 @@ public class ModelsTests
         var display = song.ArtistDisplay;
 
         // Assert
-        Assert.Equal("未知艺术家", display);
+        Assert.Equal(string.Empty, display);
     }
 
     [Fact]
-    public void Song_ArtistDisplay_WithNullArtists_ReturnsUnknownArtist()
+    public void Song_ArtistDisplay_WithNullArtists_ReturnsEmptyString()
     {
         // Arrange
         var song = new Song
@@ -74,6 +74,6 @@ public class ModelsTests
         var display = song.ArtistDisplay;
 
         // Assert
-        Assert.Equal("未知艺术家", display);
+        Assert.Equal(string.Empty, display);
     }
 }
